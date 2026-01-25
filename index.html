@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Inter:wght@400;600&family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&family=Space+Grotesk:wght@400;700&display=swap"
+    rel="stylesheet">
+
+  <title>Autominds | The Future of AI</title>
+</head>
+
+<body>
+  <!-- Setup for particles/threejs bg if needed, using simple css bg for now or canvas in main.js -->
+  <canvas id="scroll-canvas"></canvas>
+
+  <header class="navbar" id="navbar">
+    <div class="container nav-content">
+      <a href="#" class="logo">
+        <span class="logo-text">AUTOMINDS</span>
+        <div class="logo-glow"></div>
+      </a>
+      <nav class="nav-links">
+        <a href="#hero">Discover</a>
+        <a href="#services">Services</a>
+        <a href="#about">About Us</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a href="#contact" class="btn btn-primary btn-sm">Free Consultation</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+      <div class="hero-bg-layer" id="hero-bg">
+        <!-- Scroll canvas replaces video -->
+      </div>
+      <div class="container hero-content fade-in-section">
+        <p class="hero-tagline neon-text">The Edge of Innovation</p>
+        <h1 class="hero-title">Step Into the <br><span class="text-gradient">AI Frontier</span></h1>
+        <p class="hero-subtitle">Discover the future of cosmic automation and intelligent innovation, where every task
+          unlocks a universe powered by AI.</p>
+        <div class="hero-cta-group">
+          <a href="#services" class="btn btn-cta">Start Exploring →</a>
+          <a href="#about" class="btn btn-glass">See How It Works</a>
+        </div>
+      </div>
+
+      <div class="scroll-indicator">
+        <span class="mouse">
+          <span class="wheel"></span>
+        </span>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services-section">
+      <div class="container">
+        <div class="section-header fade-in-section">
+          <h2>Custom AI Solutions <br> for Every Business</h2>
+          <p>From automation to intelligent agents - we build the future, affordably.</p>
+        </div>
+
+        <div class="services-grid">
+          <div class="service-card glass-panel fade-in-section">
+            <div class="icon-box glow-cyan">⚙️</div>
+            <h3>AI Automation</h3>
+            <p>Streamline operations with intelligent workflows that work 24/7.</p>
+          </div>
+          <div class="service-card glass-panel fade-in-section">
+            <div class="icon-box glow-blue">🌐</div>
+            <h3>Smart Web Solutions</h3>
+            <p>Scalable websites that grow with your brand, powered by cutting-edge tech.</p>
+          </div>
+          <div class="service-card glass-panel fade-in-section">
+            <div class="icon-box glow-purple">🧠</div>
+            <h3>Custom AI Agents</h3>
+            <p>Tailored AI assistants that understand your business and serve your customers.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+      <div class="container about-grid">
+        <div class="about-text fade-in-section">
+          <h2>Building Tomorrow's <span class="text-accent">Solutions Today</span></h2>
+          <p>At Autominds, we believe every business deserves access to world-class AI automation - without enterprise
+            pricing. Our team combines deep technical expertise with creative problem-solving to deliver custom
+            solutions that scale.</p>
+
+          <div class="stats-container">
+            <div class="stat-item">
+              <span class="stat-number" data-target="100">0</span><span class="symbol">%</span>
+              <span class="stat-label">Custom Solutions</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" data-target="24">0</span><span class="symbol">/7</span>
+              <span class="stat-label">Support</span>
+            </div>
+          </div>
+        </div>
+        <div class="about-visual fade-in-section">
+          <!-- Placeholder for holographic UI visualization -->
+          <div class="holo-interface glass-panel animate-float">
+            <div class="holo-header">System: Active</div>
+            <div class="holo-graph">
+              <div class="bar" style="height: 60%"></div>
+              <div class="bar" style="height: 80%"></div>
+              <div class="bar" style="height: 40%"></div>
+              <div class="bar" style="height: 90%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+      <div class="portal-bg-layer"></div>
+      <div class="container contact-container fade-in-section">
+        <div class="contact-header">
+          <h2>Ready to Automate Your Future?</h2>
+          <p>Get a free consultation and discover what's possible.</p>
+        </div>
+
+        <form class="contact-form glass-panel">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="john@company.com">
+          </div>
+          <div class="form-group">
+            <label for="interest">Service Interest</label>
+            <select id="interest">
+              <option value="automation">AI Automation</option>
+              <option value="website">Web Development</option>
+              <option value="agent">Custom AI Agent</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" rows="4" placeholder="Tell us about your project..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-cta btn-block">Launch Your Project →</button>
+        </form>
+
+        <div class="contact-info">
+          <p>📧 automindhq@gmail.com</p>
+          <p>📞 +91 9446910416</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 Autominds. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
