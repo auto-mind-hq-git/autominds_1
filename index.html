@@ -16,7 +16,19 @@
 </head>
 
 <body>
+  <!-- Loading Overlay -->
+  <div id="loader" class="loader-overlay">
+    <div class="loader-content">
+      <div class="loader-logo">AUTOMINDS</div>
+      <div class="loader-progress-bar">
+        <div class="loader-progress-fill" id="loader-fill"></div>
+      </div>
+      <div class="loader-text" id="loader-text">Initializing Systems... 0%</div>
+    </div>
+  </div>
+
   <!-- Setup for particles/threejs bg if needed, using simple css bg for now or canvas in main.js -->
+  <div class="custom-cursor"></div>
   <canvas id="scroll-canvas"></canvas>
 
   <header class="navbar" id="navbar">
@@ -113,15 +125,18 @@
           </div>
         </div>
         <div class="about-visual fade-in-section">
-          <!-- Placeholder for holographic UI visualization -->
+          <!-- Animated holographic UI visualization -->
           <div class="holo-interface glass-panel animate-float">
-            <div class="holo-header">System: Active</div>
-            <div class="holo-graph">
-              <div class="bar" style="height: 60%"></div>
-              <div class="bar" style="height: 80%"></div>
-              <div class="bar" style="height: 40%"></div>
-              <div class="bar" style="height: 90%"></div>
+            <div class="holo-header">SYSTEM STATUS: OPTIMAL</div>
+            <div class="holo-rings">
+              <div class="ring-outer"></div>
+              <div class="ring-inner"></div>
+              <div class="ring-core"></div>
             </div>
+            <div class="holo-scan-line"></div>
+            <div class="holo-data-point p1"></div>
+            <div class="holo-data-point p2"></div>
+            <div class="holo-data-point p3"></div>
           </div>
         </div>
       </div>

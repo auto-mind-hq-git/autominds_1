@@ -1,4 +1,24 @@
 import './style.css'
+import Lenis from 'lenis'
+
+// Initialize Smooth Scroll (Lenis)
+const lenis = new Lenis({
+  duration: 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  direction: 'vertical',
+  gestureDirection: 'vertical',
+  smooth: true,
+  mouseMultiplier: 1,
+  smoothTouch: false,
+  touchMultiplier: 2,
+});
+
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+
+requestAnimationFrame(raf);
 
 // 1. Navbar Glass Effect & Mobile Menu
 const navbar = document.getElementById('navbar');
@@ -11,6 +31,18 @@ window.addEventListener('scroll', () => {
   } else {
     navbar.classList.remove('scrolled');
   }
+});
+
+// Custom Cursor Logic
+const cursor = document.querySelector('.custom-cursor');
+document.addEventListener('mousemove', (e) => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+});
+
+document.querySelectorAll('a, button, .service-card').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('active'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('active'));
 });
 
 // Mobile Menu Toggle
@@ -34,15 +66,59 @@ const canvas = document.getElementById('scroll-canvas');
 const context = canvas.getContext('2d');
 const totalFrames = 241;
 const images = [];
-const frameLocation = '/frames/ezgif-frame-';
+// Updated to WebP path
+const frameLocation = '/frames_webp/ezgif-frame-';
 
 // Preload images
 const preloadImages = () => {
+  let loadedCount = 0;
+  const loaderFill = document.getElementById('loader-fill');
+  const loaderText = document.getElementById('loader-text');
+  const loader = document.getElementById('loader');
+
+  // Ensure we don't start animation before at least some images are ready
+  const minFramesToStart = 50;
+  let hasStarted = false;
+
+  const finishLoading = () => {
+    if (hasStarted) return;
+    hasStarted = true;
+
+    // Force UI to 100%
+    if (loaderFill) loaderFill.style.width = '100%';
+    if (loaderText) loaderText.innerText = 'System Ready';
+
+    setTimeout(() => {
+      if (loader) loader.classList.add('hidden');
+      // Trigger initial draw
+      drawImage(0);
+      renderLoop();
+    }, 500);
+  };
+
+  // Safety fallback: Force start after 8 seconds (max wait)
+  setTimeout(finishLoading, 8000);
+
+  const updateProgress = () => {
+    loadedCount++;
+    const percent = Math.floor((loadedCount / totalFrames) * 100);
+
+    if (loaderFill) loaderFill.style.width = `${percent}%`;
+    if (loaderText) loaderText.innerText = `Initializing Systems... ${percent}%`;
+
+    // Finish if 95% loaded. This prevents getting stuck at 99% if 1-2 images hang or error out silently.
+    if (loadedCount >= totalFrames * 0.95) {
+      finishLoading();
+    }
+  };
+
   for (let i = 1; i <= totalFrames; i++) {
     const img = new Image();
     const frameIndex = i.toString().padStart(3, '0');
-    img.src = `${frameLocation}${frameIndex}.jpg`;
+    img.src = `${frameLocation}${frameIndex}.webp`;
     images.push(img);
+    img.onload = updateProgress;
+    img.onerror = updateProgress; // Count errors too so we don't hang
   }
 };
 
@@ -132,7 +208,7 @@ window.addEventListener('resize', () => {
 });
 
 // Start loop
-renderLoop();
+// Loop started by preloadImages completion
 
 // 3. Intersection Observer (Fade-ins)
 const observerOptions = {
