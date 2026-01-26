@@ -1,13 +1,32 @@
 import './style.css'
 
-// 1. Navbar Glass Effect
+// 1. Navbar Glass Effect & Mobile Menu
 const navbar = document.getElementById('navbar');
+const mobileBtn = document.querySelector('.mobile-menu-btn');
+const navLinks = document.querySelector('.nav-links');
+
 window.addEventListener('scroll', () => {
   if (window.scrollY > 50) {
     navbar.classList.add('scrolled');
   } else {
     navbar.classList.remove('scrolled');
   }
+});
+
+// Mobile Menu Toggle
+if (mobileBtn) {
+  mobileBtn.addEventListener('click', () => {
+    mobileBtn.classList.toggle('active');
+    navLinks.classList.toggle('active');
+  });
+}
+
+// Close menu when clicking a link
+document.querySelectorAll('.nav-links a').forEach(link => {
+  link.addEventListener('click', () => {
+    mobileBtn.classList.remove('active');
+    navLinks.classList.remove('active');
+  });
 });
 
 // 2. Scroll Animation (Canvas Frame Sequence)
@@ -39,8 +58,20 @@ const drawImage = (index) => {
     const img = images[index];
     // Calculate cover dimensions
     const ratio = Math.max(canvas.width / img.width, canvas.height / img.height);
-    const centerShift_x = (canvas.width - img.width * ratio) / 2;
+
+    let centerShift_x = (canvas.width - img.width * ratio) / 2;
     const centerShift_y = (canvas.height - img.height * ratio) / 2;
+
+    // Mobile Adjustment: Shift focus to the right (to show robot)
+    if (window.innerWidth < 768) {
+      const overflowX = (img.width * ratio) - canvas.width;
+      if (overflowX > 0) {
+        // Standard center is -overflowX / 2. 
+        // Shift further negative to reveal right side.
+        // 0.5 is center, 1.0 is full right side. 0.75 is a good balance.
+        centerShift_x = -(overflowX * 0.75);
+      }
+    }
 
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.drawImage(img, 0, 0, img.width, img.height,
