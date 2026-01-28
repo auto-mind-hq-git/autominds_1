@@ -134,19 +134,25 @@ ul {
 
 .nav-links a {
     color: var(--color-text-main);
-    font-size: 0.95rem;
+    text-decoration: none;
+    font-size: 0.9rem;
     font-weight: 500;
+    transition: color 0.3s;
     position: relative;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--color-cyan);
+    text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
 }
 
 .nav-links a::after {
     content: '';
     position: absolute;
-    bottom: -4px;
+    bottom: -5px;
     left: 0;
     width: 0;
-    height: 2px;
-    background: var(--color-accent);
     transition: width 0.3s ease;
 }
 
@@ -581,6 +587,12 @@ ul {
     outline: none;
     border-color: var(--color-accent);
     box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    opacity: 1;
 }
 
 .btn-block {

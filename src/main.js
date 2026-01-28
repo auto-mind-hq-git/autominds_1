@@ -1,5 +1,10 @@
 import './style.css'
 import Lenis from 'lenis'
+import emailjs from '@emailjs/browser';
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Initialize Smooth Scroll (Lenis)
 const lenis = new Lenis({
@@ -40,10 +45,106 @@ document.addEventListener('mousemove', (e) => {
   cursor.style.top = e.clientY + 'px';
 });
 
-document.querySelectorAll('a, button, .service-card').forEach(el => {
+document.querySelectorAll('a, button, .service-card, input, select, textarea').forEach(el => { // Updated selector
   el.addEventListener('mouseenter', () => cursor.classList.add('active'));
   el.addEventListener('mouseleave', () => cursor.classList.remove('active'));
 });
+
+// --- Contact Form Logic (EmailJS) ---
+
+// EMAILJS CONFIGURATION - USER MUST REPLACE THESE!
+// NOTE: The "To Email" (automindhq@gmail.com) is configured in your EmailJS Dashboard, not here.
+const EMAILJS_SERVICE_ID = 'service_v9yqu4b';
+const EMAILJS_TEMPLATE_ID = 'template_o7iu6ae';
+const EMAILJS_PUBLIC_KEY = 'dk5TYY5x5yyhoxWzI';
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const contactForm = document.querySelector('.contact-form');
+const submitBtn = contactForm ? contactForm.querySelector('button[type="submit"]') : null;
+
+if (contactForm) {
+  contactForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // Basic Validation
+    const name = document.getElementById('name');
+    const email = document.getElementById('email');
+    const message = document.getElementById('message');
+    let isValid = true;
+
+    [name, email, message].forEach(input => {
+      if (!input.value.trim()) {
+        input.classList.add('input-error');
+        isValid = false;
+      } else {
+        input.classList.remove('input-error');
+      }
+    });
+
+    if (!isValid) return;
+
+    // Loading State
+    const originalBtnText = submitBtn.innerText;
+    submitBtn.innerText = 'Transmitting...';
+    submitBtn.classList.add('btn-disabled');
+    submitBtn.disabled = true;
+
+    // Prepare Template Params
+    const templateParams = {
+      from_name: name.value,
+      from_email: email.value,
+      service_interest: document.getElementById('interest').value,
+      message: message.value
+    };
+
+    // Send Email
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+      .then(() => {
+        showToast('Transmission Successful!', 'success');
+        contactForm.reset();
+      })
+      .catch((error) => {
+        console.error('EmailJS Error:', error);
+        // Fallback for demo purposes if keys aren't set
+        if (EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
+          showToast('Demo Mode: Success! (Configure Keys)', 'success');
+          contactForm.reset();
+        } else {
+          showToast('Transmission Failed. Try again.', 'error');
+        }
+      })
+      .finally(() => {
+        submitBtn.innerText = originalBtnText;
+        submitBtn.classList.remove('btn-disabled');
+        submitBtn.disabled = false;
+      });
+  });
+
+  // Clear error on input
+  contactForm.querySelectorAll('input, textarea').forEach(input => {
+    input.addEventListener('input', () => input.classList.remove('input-error'));
+  });
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `notification-toast ${type}`;
+  toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+  document.body.appendChild(toast);
+
+  // Animate In
+  setTimeout(() => toast.classList.add('show'), 100);
+
+  // Remove after 3s
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
 
 // Mobile Menu Toggle
 if (mobileBtn) {
@@ -93,6 +194,7 @@ const preloadImages = () => {
       // Trigger initial draw
       drawImage(0);
       renderLoop();
+      initAdvancedAnimations(); // Trigger GSAP animations
     }, 500);
   };
 
@@ -169,27 +271,160 @@ let currentFrameIndex = 0;
 let targetFrameIndex = 0;
 const easingFactor = 0.08; // Adjust for smoother/faster feel (0.05 - 0.1)
 
-// Scroll Handler
+// Navigation Highlighting & Progress Bar
+const sections = document.querySelectorAll('section');
+const navItems = document.querySelectorAll('.nav-links a');
+const progressBar = document.getElementById('scroll-progress');
+
 window.addEventListener('scroll', () => {
+  // 1. Progress Bar Logic
   const scrollTop = window.scrollY;
   const maxScroll = document.body.scrollHeight - window.innerHeight;
   const scrollFraction = scrollTop / maxScroll;
+  if (progressBar) {
+    progressBar.style.width = `${scrollFraction * 100}%`;
+  }
 
+  // 2. Frame Animation Logic
   // Update target, don't draw yet
   targetFrameIndex = Math.min(
     totalFrames - 1,
     Math.max(0, scrollFraction * totalFrames) // ensure >= 0
   );
+
+  // 3. Active Section Highlighting
+  let currentSection = '';
+
+  sections.forEach(section => {
+    const sectionTop = section.offsetTop;
+    const sectionHeight = section.clientHeight;
+
+    // Offset a bit (1/3rd of screen) to trigger "active" sooner
+    if (pageYOffset >= (sectionTop - window.innerHeight / 3)) {
+      currentSection = section.getAttribute('id');
+    }
+  });
+
+  navItems.forEach(item => {
+    item.classList.remove('active');
+    if (item.getAttribute('href').includes(currentSection)) {
+      item.classList.add('active');
+    }
+  });
 });
 
+// --- Advanced Animations (GSAP) ---
+const initAdvancedAnimations = () => {
+  // 1. Hero Staggered Reveal
+  const heroTl = gsap.timeline();
+  heroTl.from(".hero-content h1", {
+    y: 100,
+    opacity: 0,
+    duration: 1,
+    ease: "power4.out"
+  })
+    .from(".hero-content p", {
+      y: 50,
+      opacity: 0,
+      duration: 1,
+      ease: "power3.out"
+    }, "-=0.8")
+    .from(".hero-buttons", {
+      y: 30,
+      opacity: 0,
+      duration: 0.8,
+      ease: "back.out(1.7)"
+    }, "-=0.6");
+
+  // 2. Magnetic Buttons
+  const buttons = document.querySelectorAll(".btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("mousemove", (e) => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+
+      gsap.to(btn, {
+        x: x * 0.3, // Strength of magnet
+        y: y * 0.3,
+        duration: 0.3,
+        ease: "power2.out"
+      });
+    });
+
+    btn.addEventListener("mouseleave", () => {
+      gsap.to(btn, {
+        x: 0,
+        y: 0,
+        duration: 0.5,
+        ease: "elastic.out(1, 0.3)"
+      });
+    });
+  });
+
+  // 3. Service Cards 3D Tilt
+  const cards = document.querySelectorAll(".service-card");
+  cards.forEach(card => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * -5; // Max 5deg rotation
+      const rotateY = ((x - centerX) / centerX) * 5;
+
+      gsap.to(card, {
+        perspective: 1000,
+        rotationX: rotateX,
+        rotationY: rotateY,
+        scale: 1.02,
+        duration: 0.5,
+        ease: "power2.out"
+      });
+    });
+
+    card.addEventListener("mouseleave", () => {
+      gsap.to(card, {
+        rotationX: 0,
+        rotationY: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: "power2.out"
+      });
+    });
+  });
+};
+
+// Initialize after loader finishes
+// We'll hook this into the existing 'finishLoading' function or call it here if we want immediate effects behind the loader
+// ideally it runs when loader disappears.
+// Let's modify the finishLoading function in preloadImages to call this.
+
 // Render Loop
+let lastDrawnFrame = -1;
+
 const renderLoop = () => {
   // Linear Interpolation (Lerp)
-  currentFrameIndex += (targetFrameIndex - currentFrameIndex) * easingFactor;
+  const diff = targetFrameIndex - currentFrameIndex;
+
+  // Optimization: If difference is very small, snap to target to stop micro-calculations
+  if (Math.abs(diff) < 0.05) {
+    currentFrameIndex = targetFrameIndex;
+  } else {
+    currentFrameIndex += diff * easingFactor;
+  }
 
   // Draw the interpolated frame
   const frameToDraw = Math.floor(currentFrameIndex);
-  drawImage(frameToDraw);
+
+  // Optimization: Only draw if the frame actually changed!
+  if (frameToDraw !== lastDrawnFrame) {
+    drawImage(frameToDraw);
+    lastDrawnFrame = frameToDraw;
+  }
 
   requestAnimationFrame(renderLoop);
 };
