@@ -1,6 +1,6 @@
 import './style.css'
 import Lenis from 'lenis'
-import emailjs from '@emailjs/browser';
+
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -52,13 +52,8 @@ document.querySelectorAll('a, button, .service-card, input, select, textarea').f
 
 // --- Contact Form Logic (EmailJS) ---
 
-// EMAILJS CONFIGURATION - USER MUST REPLACE THESE!
-// NOTE: The "To Email" (automindhq@gmail.com) is configured in your EmailJS Dashboard, not here.
-const EMAILJS_SERVICE_ID = 'service_v9yqu4b';
-const EMAILJS_TEMPLATE_ID = 'template_o7iu6ae';
-const EMAILJS_PUBLIC_KEY = 'dk5TYY5x5yyhoxWzI';
-
-emailjs.init(EMAILJS_PUBLIC_KEY);
+// GOOGLE FORM CONFIGURATION
+const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSf6QQbfXogxHxMKRwUa7ARR9HLK1c-IiLvuwgxQ6O-LeWsteA/formResponse';
 
 const contactForm = document.querySelector('.contact-form');
 const submitBtn = contactForm ? contactForm.querySelector('button[type="submit"]') : null;
@@ -71,6 +66,7 @@ if (contactForm) {
     const name = document.getElementById('name');
     const email = document.getElementById('email');
     const message = document.getElementById('message');
+    const interest = document.getElementById('interest');
     let isValid = true;
 
     [name, email, message].forEach(input => {
@@ -90,29 +86,37 @@ if (contactForm) {
     submitBtn.classList.add('btn-disabled');
     submitBtn.disabled = true;
 
-    // Prepare Template Params
-    const templateParams = {
-      from_name: name.value,
-      from_email: email.value,
-      service_interest: document.getElementById('interest').value,
-      message: message.value
+    // Map Service Interest Values to Google Form Expected Values
+    const interestMap = {
+      'automation': 'Ai automation',
+      'website': 'Web development',
+      'agent': 'Custom ai agent',
+      'other': 'Other'
     };
 
-    // Send Email
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+    // Prepare FormData for Google Forms
+    const formData = new FormData();
+    formData.append('entry.1892089111', name.value);
+    formData.append('entry.1992298724', email.value);
+    formData.append('entry.1099071446', interestMap[interest.value] || 'Other');
+    formData.append('entry.1051882245', message.value);
+
+    // Send to Google Forms
+    // mode: 'no-cors' needed because Google Forms doesn't return CORS headers.
+    // This defines an opaque response, so we can't check response.ok, but we assume success if no network error.
+    fetch(GOOGLE_FORM_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData
+    })
       .then(() => {
+        // Assume success
         showToast('Transmission Successful!', 'success');
         contactForm.reset();
       })
       .catch((error) => {
-        console.error('EmailJS Error:', error);
-        // Fallback for demo purposes if keys aren't set
-        if (EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
-          showToast('Demo Mode: Success! (Configure Keys)', 'success');
-          contactForm.reset();
-        } else {
-          showToast('Transmission Failed. Try again.', 'error');
-        }
+        console.error('Submission Error:', error);
+        showToast('Transmission Failed. Try again.', 'error');
       })
       .finally(() => {
         submitBtn.innerText = originalBtnText;
@@ -272,45 +276,53 @@ let targetFrameIndex = 0;
 const easingFactor = 0.08; // Adjust for smoother/faster feel (0.05 - 0.1)
 
 // Navigation Highlighting & Progress Bar
+// Navigation Highlighting & Progress Bar
 const sections = document.querySelectorAll('section');
 const navItems = document.querySelectorAll('.nav-links a');
 const progressBar = document.getElementById('scroll-progress');
 
+// Optimization: Cache maxScroll to avoid reflows during scroll
+let maxScroll = document.body.scrollHeight - window.innerHeight;
+
+window.addEventListener('resize', () => {
+  maxScroll = document.body.scrollHeight - window.innerHeight;
+  setCanvasDimensions(); // Existing canvas resize
+});
+
 window.addEventListener('scroll', () => {
-  // 1. Progress Bar Logic
+  // 1. Progress Bar Logic (Uses cached maxScroll)
   const scrollTop = window.scrollY;
-  const maxScroll = document.body.scrollHeight - window.innerHeight;
   const scrollFraction = scrollTop / maxScroll;
   if (progressBar) {
     progressBar.style.width = `${scrollFraction * 100}%`;
   }
 
   // 2. Frame Animation Logic
-  // Update target, don't draw yet
   targetFrameIndex = Math.min(
     totalFrames - 1,
-    Math.max(0, scrollFraction * totalFrames) // ensure >= 0
+    Math.max(0, scrollFraction * totalFrames)
   );
+});
 
-  // 3. Active Section Highlighting
-  let currentSection = '';
-
-  sections.forEach(section => {
-    const sectionTop = section.offsetTop;
-    const sectionHeight = section.clientHeight;
-
-    // Offset a bit (1/3rd of screen) to trigger "active" sooner
-    if (pageYOffset >= (sectionTop - window.innerHeight / 3)) {
-      currentSection = section.getAttribute('id');
+// 3. Active Section Highlighting (IntersectionObserver - High Performance)
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const currentId = entry.target.getAttribute('id');
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href').includes(currentId)) {
+          item.classList.add('active');
+        }
+      });
     }
   });
+}, {
+  threshold: 0.5 // Trigger when 50% of section is visible
+});
 
-  navItems.forEach(item => {
-    item.classList.remove('active');
-    if (item.getAttribute('href').includes(currentSection)) {
-      item.classList.add('active');
-    }
-  });
+sections.forEach(section => {
+  navObserver.observe(section);
 });
 
 // --- Advanced Animations (GSAP) ---
