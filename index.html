@@ -71,6 +71,15 @@
       ]
     }
   </script>
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function () {
+      // PLACHOLDER: Replace with your actual Public Key from EmailJS dashboard
+      // default is just initialization, actual logic in main.js
+      emailjs.init("dk5TYY5x5yyhoxWzI");
+    })();
+  </script>
 </head>
 
 <body>
@@ -120,13 +129,14 @@
         <!-- Scroll canvas replaces video -->
       </div>
       <div class="container hero-content fade-in-section">
-        <p class="hero-tagline neon-text">The Edge of Innovation</p>
-        <h1 class="hero-title">Step Into the <br><span class="text-gradient">AI Frontier</span></h1>
-        <p class="hero-subtitle">Discover the future of cosmic automation and intelligent innovation, where every task
-          unlocks a universe powered by AI.</p>
+        <p class="hero-overline neon-text">ENTERPRISE AI AUTOMATION</p>
+        <h1 class="hero-title">Build Intelligent Systems <br><span class="text-gradient">That Scale Your Business</span>
+        </h1>
+        <p class="hero-subtitle">Custom AI agents and automation workflows designed for ROI, delivered without
+          enterprise pricing.</p>
         <div class="hero-cta-group">
-          <a href="#services" class="btn btn-cta">Start Exploring →</a>
-          <a href="#about" class="btn btn-glass">See How It Works</a>
+          <a href="#contact" class="btn btn-cta">Start Your Project →</a>
+          <a href="#portfolio" class="btn btn-glass">View Case Studies</a>
         </div>
       </div>
 
@@ -150,54 +160,337 @@
             <div class="icon-box glow-cyan">⚙️</div>
             <h3>AI Automation</h3>
             <p>Streamline operations with intelligent workflows that work 24/7.</p>
+            <div class="service-metrics">
+              <div class="s-metric"><span>🚀</span> 40+ Workflows</div>
+              <div class="s-metric"><span>⏱️</span> 60% Savings</div>
+            </div>
+            <a href="#contact" class="service-link">Learn More →</a>
           </div>
           <div class="service-card glass-panel fade-in-section">
             <div class="icon-box glow-blue">🌐</div>
             <h3>Smart Web Solutions</h3>
             <p>Scalable websites that grow with your brand, powered by cutting-edge tech.</p>
+            <div class="service-metrics">
+              <div class="s-metric"><span>⚡</span> 99% Score</div>
+              <div class="s-metric"><span>📈</span> 2x Growth</div>
+            </div>
+            <a href="#contact" class="service-link">Learn More →</a>
           </div>
           <div class="service-card glass-panel fade-in-section">
             <div class="icon-box glow-purple">🧠</div>
             <h3>Custom AI Agents</h3>
             <p>Tailored AI assistants that understand your business and serve your customers.</p>
+            <div class="service-metrics">
+              <div class="s-metric"><span>🤖</span> 24/7 Active</div>
+              <div class="s-metric"><span>💬</span> Instant Reply</div>
+            </div>
+            <a href="#contact" class="service-link">Learn More →</a>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- About Section -->
-    <section id="about" class="about-section">
-      <div class="container about-grid">
-        <div class="about-text fade-in-section">
-          <h2>Building Tomorrow's <span class="text-accent">Solutions Today</span></h2>
-          <p>At Autominds, we believe every business deserves access to world-class AI automation - without enterprise
-            pricing. Our team combines deep technical expertise with creative problem-solving to deliver custom
-            solutions that scale.</p>
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="portfolio-section">
+      <div class="container">
+        <div class="section-header fade-in-section">
+          <p class="section-overline">PROVEN RESULTS</p>
+          <h2>Projects That <span class="text-gradient">Deliver Impact</span></h2>
+          <p class="section-subtitle">Real automation solutions deployed for real businesses</p>
+        </div>
 
-          <div class="stats-container">
-            <div class="stat-item">
-              <span class="stat-number" data-target="100">0</span><span class="symbol">%</span>
-              <span class="stat-label">Custom Solutions</span>
+        <div class="portfolio-grid">
+          <!-- Card 1: Email Automation -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">AI AUTOMATION</div>
+              <div class="thumb-icon-container">
+                <i class="fas fa-envelope-open-text"></i>
+              </div>
             </div>
-            <div class="stat-item">
-              <span class="stat-number" data-target="24">0</span><span class="symbol">/7</span>
-              <span class="stat-label">Support</span>
+            <div class="project-content">
+              <h3 class="project-title">AI EMAIL AUTOMATION SYSTEM</h3>
+              <p class="project-description">A personalized outreach system that automatically generates, sends, and
+                follows up on emails using AI. Analyzes recipient behavior to optimize timing and content for maximum
+                engagement.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">3x</span>
+                  <span class="metric-label">ENGAGEMENT RATE</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">80%</span>
+                  <span class="metric-label">TIME SAVED</span>
+                </div>
+              </div>
+              <a href="#" class="view-case-study">View Case Study →</a>
+            </div>
+          </div>
+
+          <!-- Card 2: Ad Generation -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">AI AGENT</div>
+              <div class="thumb-icon-container">
+                <i class="fas fa-wand-magic-sparkles"></i>
+              </div>
+            </div>
+            <div class="project-content">
+              <h3 class="project-title">AI AD GENERATION AGENT</h3>
+              <p class="project-description">An AI-powered agent that takes product images as input and automatically
+                creates marketing ad creatives. Generates multiple variations of visuals and copy tailored to different
+                platforms.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">5x</span>
+                  <span class="metric-label">FASTER CREATION</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">40+</span>
+                  <span class="metric-label">AD VARIATIONS</span>
+                </div>
+              </div>
+              <a href="#" class="view-case-study">View Case Study →</a>
+            </div>
+          </div>
+
+          <!-- Card 3: Lead Scraping -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">AI AUTOMATION</div>
+              <div class="thumb-icon-container">
+                <i class="fas fa-filter"></i>
+              </div>
+            </div>
+            <div class="project-content">
+              <h3 class="project-title">AI LEAD SCRAPING SYSTEM</h3>
+              <p class="project-description">An automated system that scrapes, cleans, and organizes lead data from
+                multiple sources. AI filters and scores each lead before storing structured data directly into Google
+                Sheets.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">500+</span>
+                  <span class="metric-label">LEADS PER DAY</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">90%</span>
+                  <span class="metric-label">DATA ACCURACY</span>
+                </div>
+              </div>
+              <a href="#" class="view-case-study">View Case Study →</a>
+            </div>
+          </div>
+
+          <!-- Card 4: YouTube Assistant -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">CUSTOM AI AGENT</div>
+              <div class="thumb-icon-container">
+                <i class="fab fa-telegram-plane"></i>
+              </div>
+            </div>
+            <div class="project-content">
+              <h3 class="project-title">AI YOUTUBE CONTENT ASSISTANT</h3>
+              <p class="project-description">A Telegram-based AI assistant that researches YouTube trends, generates
+                video topic ideas, creates outlines, and writes scripts. Automates the entire content planning workflow
+                in
+                one place.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">10x</span>
+                  <span class="metric-label">RESEARCH SPEED</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">60%</span>
+                  <span class="metric-label">PLANNING TIME SAVED</span>
+                </div>
+              </div>
+              <a href="#" class="view-case-study">View Case Study →</a>
+            </div>
+          </div>
+
+          <!-- Card 5: Stock Analysis -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">AI AGENT</div>
+              <div class="thumb-icon-container">
+                <i class="fas fa-chart-line"></i>
+              </div>
+            </div>
+            <div class="project-content">
+              <h3 class="project-title">AI STOCK ANALYSIS AGENT</h3>
+              <p class="project-description">An intelligent agent that performs real-time technical analysis on stocks.
+                Scans market data, identifies patterns, generates reports, and provides data-driven insights to support
+                investment decisions.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">15+</span>
+                  <span class="metric-label">INDICATORS TRACKED</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">98%</span>
+                  <span class="metric-label">REPORT ACCURACY</span>
+                </div>
+              </div>
+              <a href="#" class="view-case-study">View Case Study →</a>
             </div>
           </div>
         </div>
-        <div class="about-visual fade-in-section">
-          <!-- Animated holographic UI visualization -->
-          <div class="holo-interface glass-panel animate-float">
-            <div class="holo-header">SYSTEM STATUS: OPTIMAL</div>
-            <div class="holo-rings">
-              <div class="ring-outer"></div>
-              <div class="ring-inner"></div>
-              <div class="ring-core"></div>
+      </div>
+    </section>
+
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+      <div class="container">
+        <!-- New Stats Bar -->
+        <div class="stats-grid fade-in-section">
+          <div class="stat-item-new">
+            <div class="stat-row">
+              <div class="stat-number-new" data-target="47">0</div>
             </div>
-            <div class="holo-scan-line"></div>
-            <div class="holo-data-point p1"></div>
-            <div class="holo-data-point p2"></div>
-            <div class="holo-data-point p3"></div>
+            <div class="stat-label-new">Projects Delivered</div>
+          </div>
+          <div class="stat-item-new">
+            <div class="stat-row">
+              <div class="stat-number-new" data-target="98">0</div>
+              <span class="symbol-new">%</span>
+            </div>
+            <div class="stat-label-new">Client Satisfaction</div>
+          </div>
+          <div class="stat-item-new">
+            <div class="stat-row">
+              <div class="stat-number-new" data-target="3.5">0</div>
+              <span class="symbol-new">M+</span>
+            </div>
+            <div class="stat-label-new">Tasks Automated</div>
+          </div>
+          <div class="stat-item-new">
+            <div class="stat-row">
+              <div class="stat-number-new" data-target="99.9">0</div>
+              <span class="symbol-new">%</span>
+            </div>
+            <div class="stat-label-new">System Uptime</div>
+          </div>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-text fade-in-section">
+            <h2>Building Tomorrow's <span class="text-accent">Solutions Today</span></h2>
+            <p>At Autominds, we believe every business deserves access to world-class AI automation - without enterprise
+              pricing. Our team combines deep technical expertise with creative problem-solving to deliver custom
+              solutions that scale.</p>
+          </div>
+          <div class="about-visual fade-in-section">
+            <!-- Animated holographic UI visualization -->
+            <div class="holo-interface glass-panel animate-float">
+              <div class="holo-header">SYSTEM STATUS: OPTIMAL</div>
+              <div class="holo-rings">
+                <div class="ring-outer"></div>
+                <div class="ring-inner"></div>
+                <div class="ring-core"></div>
+              </div>
+              <div class="holo-scan-line"></div>
+              <div class="holo-data-point p1"></div>
+              <div class="holo-data-point p2"></div>
+              <div class="holo-data-point p3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials-section">
+      <div class="container">
+        <div class="section-header fade-in-section">
+          <p class="section-overline">CLIENT SUCCESS</p>
+          <h2>Trusted by <span class="text-gradient">Innovators</span></h2>
+        </div>
+
+        <div class="testimonial-carousel fade-in-section">
+          <div class="testimonial-track">
+            <!-- Card 1 -->
+            <div class="testimonial-card">
+              <div class="quote-icon">“</div>
+              <p class="t-text">Autominds transformed our customer support. The AI agent handles 80% of queries, saving
+                us countless hours and significantly improving response times.</p>
+              <div class="t-author">
+                <div class="t-avatar">TC</div>
+                <div class="t-info">
+                  <h4>Sarah Jenkins</h4>
+                  <p>CEO, TechCrop</p>
+                </div>
+              </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="testimonial-card">
+              <div class="quote-icon">“</div>
+              <p class="t-text">The lead scoring system is a game changer. We only speak to qualified leads now, and our
+                conversion rate has doubled in just two months.</p>
+              <div class="t-author">
+                <div class="t-avatar">FS</div>
+                <div class="t-info">
+                  <h4>David Chen</h4>
+                  <p>Director, FutureScale</p>
+                </div>
+              </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="testimonial-card">
+              <div class="quote-icon">“</div>
+              <p class="t-text">Best investment we've made this year. The content generator maintains our brand voice
+                perfectly and scales our marketing efforts effortlessly.</p>
+              <div class="t-author">
+                <div class="t-avatar">NG</div>
+                <div class="t-info">
+                  <h4>Marcus Thorne</h4>
+                  <p>Founder, NextGen</p>
+                </div>
+              </div>
+            </div>
+            <!-- Card 4 -->
+            <div class="testimonial-card">
+              <div class="quote-icon">“</div>
+              <p class="t-text">Autominds helped us scale our operations 10x without increasing headcount. The ROI was
+                immediate and substantial.</p>
+              <div class="t-author">
+                <div class="t-avatar">ER</div>
+                <div class="t-info">
+                  <h4>Elena Rodriguez</h4>
+                  <p>COO, LogisticsPro</p>
+                </div>
+              </div>
+            </div>
+            <!-- Card 5 -->
+            <div class="testimonial-card">
+              <div class="quote-icon">“</div>
+              <p class="t-text">Their custom AI agents are indistinguishable from human support. Our customer
+                satisfaction score hit an all-time high.</p>
+              <div class="t-author">
+                <div class="t-avatar">MC</div>
+                <div class="t-info">
+                  <h4>Michael Chang</h4>
+                  <p>VP Product, FinTechOne</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-controls">
+            <button class="control-btn prev" aria-label="Previous">←</button>
+            <div class="carousel-dots"></div> <!-- Dots container for JS -->
+            <button class="control-btn next" aria-label="Next">→</button>
           </div>
         </div>
       </div>

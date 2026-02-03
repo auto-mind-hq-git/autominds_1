@@ -104,19 +104,38 @@ if (contactForm) {
     // Send to Google Forms
     // mode: 'no-cors' needed because Google Forms doesn't return CORS headers.
     // This defines an opaque response, so we can't check response.ok, but we assume success if no network error.
-    fetch(GOOGLE_FORM_URL, {
+    // --- Dual Submission Logic ---
+    const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID'; // Replace with actual Service ID
+    const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID'; // Replace with actual Template ID
+
+    // 1. Google Forms Submission
+    const googleSubmission = fetch(GOOGLE_FORM_URL, {
       method: 'POST',
       mode: 'no-cors',
       body: formData
-    })
+    });
+
+    // 2. EmailJS Submission
+    const emailJsSubmission = emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, contactForm)
       .then(() => {
-        // Assume success
-        showToast('Transmission Successful!', 'success');
+        console.log('EmailJS Success');
+      })
+      .catch((error) => {
+        console.error('EmailJS Failed:', error);
+        // We don't throw here so Promise.all doesn't fail immediately if only email fails
+        // But maybe we want to know?
+        // Let's allow partial failure but log it.
+      });
+
+    Promise.all([googleSubmission, emailJsSubmission])
+      .then(() => {
+        // Assume success if code reaches here (since we caught EmailJS error above, it resolves undefined)
+        showToast('Message Sent Successfully!', 'success');
         contactForm.reset();
       })
       .catch((error) => {
         console.error('Submission Error:', error);
-        showToast('Transmission Failed. Try again.', 'error');
+        showToast('Something went wrong. Please try again.', 'error');
       })
       .finally(() => {
         submitBtn.innerText = originalBtnText;
@@ -469,7 +488,7 @@ const observer = new IntersectionObserver((entries) => {
       entry.target.classList.add('is-visible');
 
       // Check if this is the stats section to trigger counters
-      if (entry.target.querySelector('.stat-number')) {
+      if (entry.target.querySelector('.stat-number, .stat-number-new')) {
         animateCounters(entry.target);
       }
     }
@@ -482,7 +501,7 @@ document.querySelectorAll('.fade-in-section').forEach(section => {
 
 // 4. Number Counters
 function animateCounters(container) {
-  const counters = container.querySelectorAll('.stat-number');
+  const counters = container.querySelectorAll('.stat-number, .stat-number-new');
   counters.forEach(counter => {
     // Prevent re-running if already done
     if (counter.classList.contains('counted')) return;
@@ -504,5 +523,33 @@ function animateCounters(container) {
       }
     };
     updateCounter();
+  });
+}
+
+// --- Testimonial Carousel Logic ---
+const track = document.querySelector('.testimonial-track');
+const btnPrev = document.querySelector('.control-btn.prev');
+const btnNext = document.querySelector('.control-btn.next');
+
+if (track && btnPrev && btnNext) {
+  const scrollAmount = () => {
+    // Scroll by width of one card + gap (approx)
+    // We can use the first card's width
+    const card = track.querySelector('.testimonial-card');
+    return card ? card.offsetWidth + 32 : 300; // 32px is the gap (2rem)
+  };
+
+  btnNext.addEventListener('click', () => {
+    track.scrollBy({
+      left: scrollAmount(),
+      behavior: 'smooth'
+    });
+  });
+
+  btnPrev.addEventListener('click', () => {
+    track.scrollBy({
+      left: -scrollAmount(),
+      behavior: 'smooth'
+    });
   });
 }
