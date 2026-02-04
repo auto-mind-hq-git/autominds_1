@@ -48,6 +48,22 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
+// 3. Handle Initial Hash Load (Clean URL)
+window.addEventListener('load', () => {
+  if (window.location.hash) {
+    const targetId = window.location.hash;
+    const targetElement = document.querySelector(targetId);
+
+    if (targetElement) {
+      // Scroll to target immediately or smoothly
+      lenis.scrollTo(targetElement, { immediate: false, duration: 1.5 });
+
+      // Clean the URL
+      history.replaceState(null, null, window.location.pathname);
+    }
+  }
+});
+
 // 3. Navbar Glass Effect & Mobile Menu
 const navbar = document.getElementById('navbar');
 const mobileBtn = document.querySelector('.mobile-menu-btn');
