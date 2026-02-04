@@ -72,8 +72,8 @@ const navLinks = document.querySelector('.nav-links');
 // Smart Scroll Logic
 let lastScrollTop = 0;
 
-window.addEventListener('scroll', () => {
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+lenis.on('scroll', ({ scroll }) => {
+  const scrollTop = scroll;
 
   // 1. Background Shift
   if (scrollTop > 50) {
