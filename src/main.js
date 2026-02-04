@@ -25,7 +25,30 @@ function raf(time) {
 
 requestAnimationFrame(raf);
 
-// 1. Navbar Glass Effect & Mobile Menu
+// 2. Hashless Smooth Scroll (Intercept Links)
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const targetId = this.getAttribute('href');
+    if (targetId === '#') return; // Ignore empty hash
+
+    const targetElement = document.querySelector(targetId);
+    if (targetElement) {
+      // Use Lenis for smooth scroll
+      lenis.scrollTo(targetElement);
+
+      // Close mobile menu if open
+      const mobileBtn = document.querySelector('.mobile-menu-btn');
+      const navLinks = document.querySelector('.nav-links');
+      if (mobileBtn && mobileBtn.classList.contains('active')) {
+        mobileBtn.classList.remove('active');
+        navLinks.classList.remove('active');
+      }
+    }
+  });
+});
+
+// 3. Navbar Glass Effect & Mobile Menu
 const navbar = document.getElementById('navbar');
 const mobileBtn = document.querySelector('.mobile-menu-btn');
 const navLinks = document.querySelector('.nav-links');
