@@ -30,12 +30,30 @@ const navbar = document.getElementById('navbar');
 const mobileBtn = document.querySelector('.mobile-menu-btn');
 const navLinks = document.querySelector('.nav-links');
 
+// Smart Scroll Logic
+let lastScrollTop = 0;
+
 window.addEventListener('scroll', () => {
-  if (window.scrollY > 50) {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+  // 1. Background Shift
+  if (scrollTop > 50) {
     navbar.classList.add('scrolled');
   } else {
     navbar.classList.remove('scrolled');
   }
+
+  // 2. Hide/Show on Scroll
+  // Threshold of 100px so it doesn't flicker at top
+  if (scrollTop > lastScrollTop && scrollTop > 100) {
+    // Scrolling Down
+    navbar.classList.add('nav-hidden');
+  } else {
+    // Scrolling Up
+    navbar.classList.remove('nav-hidden');
+  }
+
+  lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // Mobile or negative scrolling
 });
 
 // Custom Cursor Logic
@@ -105,8 +123,8 @@ if (contactForm) {
     // mode: 'no-cors' needed because Google Forms doesn't return CORS headers.
     // This defines an opaque response, so we can't check response.ok, but we assume success if no network error.
     // --- Dual Submission Logic ---
-    const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID'; // Replace with actual Service ID
-    const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID'; // Replace with actual Template ID
+    const EMAILJS_SERVICE_ID = 'service_v9yqu4b'; // Replace with actual Service ID
+    const EMAILJS_TEMPLATE_ID = 'template_o7iu6ae'; // Replace with actual Template ID
 
     // 1. Google Forms Submission
     const googleSubmission = fetch(GOOGLE_FORM_URL, {
@@ -190,8 +208,8 @@ const canvas = document.getElementById('scroll-canvas');
 const context = canvas.getContext('2d');
 const totalFrames = 241;
 const images = [];
-// Updated to WebP path
-const frameLocation = '/frames_webp/ezgif-frame-';
+// Updated to 4K JPG path
+const frameLocation = '/frames/ezgif-frame-';
 
 // Preload images
 const preloadImages = () => {
@@ -240,17 +258,28 @@ const preloadImages = () => {
   for (let i = 1; i <= totalFrames; i++) {
     const img = new Image();
     const frameIndex = i.toString().padStart(3, '0');
-    img.src = `${frameLocation}${frameIndex}.webp`;
+    // Use .jpg for high-res frames
+    img.src = `${frameLocation}${frameIndex}.jpg`;
     images.push(img);
     img.onload = updateProgress;
     img.onerror = updateProgress; // Count errors too so we don't hang
   }
 };
 
-// Set canvas dimensions
+// Set canvas dimensions (High-DPI Support with Performance Cap)
 const setCanvasDimensions = () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  // Get device pixel ratio, capped at 2 to avoid mobile overheating
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  // Performance Optimization: Cap max internal width to 2560px (QHD)
+  // Rendering native 4K (3840px) on canvas often causes stutters/jank
+  const maxWidth = 3000; // Slightly above QHD, well below 4K
+  if (window.innerWidth * dpr > maxWidth) {
+    dpr = maxWidth / window.innerWidth;
+  }
+
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
 };
 
 // Draw logic with "cover" effect
@@ -509,6 +538,7 @@ function animateCounters(container) {
     counter.classList.add('counted');
 
     const target = +counter.getAttribute('data-target');
+    const isFloat = target % 1 !== 0;
     const duration = 2000; // ms
     const increment = target / (duration / 16); // 60fps
 
@@ -516,10 +546,14 @@ function animateCounters(container) {
     const updateCounter = () => {
       current += increment;
       if (current < target) {
-        counter.innerText = Math.ceil(current);
+        // Use textContent for performance
+        // Format floats to 1 decimal, ints with commas
+        counter.textContent = isFloat
+          ? current.toFixed(1)
+          : Math.floor(current).toLocaleString();
         requestAnimationFrame(updateCounter);
       } else {
-        counter.innerText = target;
+        counter.textContent = isFloat ? target : target.toLocaleString();
       }
     };
     updateCounter();
@@ -553,3 +587,5 @@ if (track && btnPrev && btnNext) {
     });
   });
 }
+
+// --- Project Modal Logic Removed ---

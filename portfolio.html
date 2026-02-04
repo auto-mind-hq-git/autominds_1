@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Inter:wght@400;600&family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&family=Space+Grotesk:wght@400;700&display=swap"
+    rel="stylesheet">
+
+  <title>Autominds | Portfolio</title>
+  <meta name="description"
+    content="Autominds delivers cutting-edge AI automation, custom agents, and intelligent web solutions to transform your business. Step into the API frontier.">
+  <meta name="keywords"
+    content="AI automation, custom AI agents, web development, intelligent solutions, artificial intelligence business, Autominds">
+  <meta name="author" content="Autominds">
+  <link rel="canonical" href="https://autominds.ai">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://autominds.ai/">
+  <meta property="og:title" content="Autominds | The Future of AI">
+  <meta property="og:description"
+    content="Autominds delivers cutting-edge AI automation, custom agents, and intelligent web solutions to transform your business.">
+  <meta property="og:image" content="https://autominds.ai/og-image.jpg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://autominds.ai/">
+  <meta property="twitter:title" content="Autominds | The Future of AI">
+  <meta property="twitter:description"
+    content="Autominds delivers cutting-edge AI automation, custom agents, and intelligent web solutions to transform your business.">
+  <meta property="twitter:image" content="https://autominds.ai/twitter-image.jpg">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "Autominds",
+      "url": "https://autominds.ai",
+      "logo": "https://autominds.ai/logo.png",
+      "image": "https://autominds.ai/og-image.jpg",
+      "description": "Autominds delivers cutting-edge AI automation, custom agents, and intelligent web solutions to transform your business.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "IN"
+      },
+      "telephone": "+91 9446910416",
+      "email": "automindhq@gmail.com",
+      "priceRange": "$$",
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ],
+        "opens": "09:00",
+        "closes": "18:00"
+      },
+      "sameAs": [
+        "https://twitter.com/autominds",
+        "https://linkedin.com/company/autominds"
+      ]
+    }
+  </script>
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function () {
+      // PLACHOLDER: Replace with your actual Public Key from EmailJS dashboard
+      // default is just initialization, actual logic in main.js
+      emailjs.init("dk5TYY5x5yyhoxWzI");
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- Scroll Progress Bar -->
+  <div class="scroll-progress-bar" id="scroll-progress"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loader" class="loader-overlay">
+    <div class="loader-content">
+      <div class="loader-logo">AUTOMINDS</div>
+      <div class="loader-progress-bar">
+        <div class="loader-progress-fill" id="loader-fill"></div>
+      </div>
+      <div class="loader-text" id="loader-text">Initializing Systems... 0%</div>
+    </div>
+  </div>
+
+  <!-- Setup for particles/threejs bg if needed, using simple css bg for now or canvas in main.js -->
+  <div class="custom-cursor"></div>
+  <canvas id="scroll-canvas"></canvas>
+
+  <header class="navbar" id="navbar">
+    <div class="container nav-content">
+      <a href="#" class="logo">
+        <span class="logo-text">AUTOMINDS</span>
+        <div class="logo-glow"></div>
+      </a>
+      <button class="mobile-menu-btn" aria-label="Toggle navigation">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+      <nav class="nav-links">
+        <a href="/index.html">Home</a>
+        <a href="/index.html#services">Services</a>
+        <a href="/index.html#about">About Us</a>
+        <a href="/index.html#contact">Contact</a>
+      </nav>
+      <a href="/index.html#contact" class="btn btn-primary btn-sm nav-cta">Free Consultation</a>
+    </div>
+  </header>
+
+  <main style="padding-top: 100px;">
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="portfolio-section" style="min-height: 80vh;">
+      <div class="container">
+        <div class="section-header fade-in-section">
+          <p class="section-overline">OUR WORK</p>
+          <h2>All <span class="text-gradient">Projects</span></h2>
+          <p class="section-subtitle">Explore our complete library of AI automations and agents.</p>
+        </div>
+
+        <div class="portfolio-grid">
+          <!-- Card 1: Email Automation -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">AI AUTOMATION</div>
+              <div class="thumb-icon-container">
+                <i class="fas fa-envelope-open-text"></i>
+              </div>
+            </div>
+            <div class="project-content">
+              <h3 class="project-title">AI EMAIL AUTOMATION SYSTEM</h3>
+              <p class="project-description">A personalized outreach system that automatically generates, sends, and
+                follows up on emails using AI. Analyzes recipient behavior to optimize timing and content for maximum
+                engagement.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">3x</span>
+                  <span class="metric-label">ENGAGEMENT RATE</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">80%</span>
+                  <span class="metric-label">TIME SAVED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Ad Generation -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">AI AGENT</div>
+              <div class="thumb-icon-container">
+                <i class="fas fa-wand-magic-sparkles"></i>
+              </div>
+            </div>
+            <div class="project-content">
+              <h3 class="project-title">AI AD GENERATION AGENT</h3>
+              <p class="project-description">An AI-powered agent that takes product images as input and automatically
+                creates marketing ad creatives. Generates multiple variations of visuals and copy tailored to different
+                platforms.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">5x</span>
+                  <span class="metric-label">FASTER CREATION</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">40+</span>
+                  <span class="metric-label">AD VARIATIONS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Lead Scraping -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">AI AUTOMATION</div>
+              <div class="thumb-icon-container">
+                <i class="fas fa-filter"></i>
+              </div>
+            </div>
+            <div class="project-content">
+              <h3 class="project-title">AI LEAD SCRAPING SYSTEM</h3>
+              <p class="project-description">An automated system that scrapes, cleans, and organizes lead data from
+                multiple sources. AI filters and scores each lead before storing structured data directly into Google
+                Sheets.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">500+</span>
+                  <span class="metric-label">LEADS PER DAY</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">90%</span>
+                  <span class="metric-label">DATA ACCURACY</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: YouTube Assistant -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">CUSTOM AI AGENT</div>
+              <div class="thumb-icon-container">
+                <i class="fab fa-telegram-plane"></i>
+              </div>
+            </div>
+            <div class="project-content">
+              <h3 class="project-title">AI YOUTUBE CONTENT ASSISTANT</h3>
+              <p class="project-description">A Telegram-based AI assistant that researches YouTube trends, generates
+                video topic ideas, creates outlines, and writes scripts. Automates the entire content planning workflow
+                in
+                one place.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">10x</span>
+                  <span class="metric-label">RESEARCH SPEED</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">60%</span>
+                  <span class="metric-label">PLANNING TIME SAVED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5: Stock Analysis -->
+          <div class="portfolio-card fade-in-section">
+            <div class="project-thumbnail">
+              <div class="project-overlay-gradient"></div>
+              <div class="project-category">AI AGENT</div>
+              <div class="thumb-icon-container">
+                <i class="fas fa-chart-line"></i>
+              </div>
+            </div>
+            <div class="project-content">
+              <h3 class="project-title">AI STOCK ANALYSIS AGENT</h3>
+              <p class="project-description">An intelligent agent that performs real-time technical analysis on stocks.
+                Scans market data, identifies patterns, generates reports, and provides data-driven insights to support
+                investment decisions.</p>
+
+              <div class="project-metrics">
+                <div class="metric-item">
+                  <span class="metric-value">15+</span>
+                  <span class="metric-label">INDICATORS TRACKED</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-value">98%</span>
+                  <span class="metric-label">REPORT ACCURACY</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- End of Main Content -->
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 Autominds. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
