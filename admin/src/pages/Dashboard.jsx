@@ -13,6 +13,9 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // Auto-seed if empty
+                await DataService.checkAndSeedDatabase();
+
                 const [projects, services, testimonials] = await Promise.all([
                     DataService.getProjects(),
                     DataService.getServices(),
