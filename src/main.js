@@ -1,5 +1,9 @@
 import './style.css'
 import Lenis from 'lenis'
+import { initDynamicContent } from './utils/dynamicLoader';
+
+// Initialize Dynamic Content from Admin Panel
+initDynamicContent();
 
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -607,7 +611,7 @@ const btnNext = document.querySelector('.control-btn.next');
 if (track && btnPrev && btnNext) {
   const scrollAmount = () => {
     // Scroll by width of one card + gap (approx)
-    // We can use the first card's width
+    // We can use the first card's width, or default if not yet rendered
     const card = track.querySelector('.testimonial-card');
     return card ? card.offsetWidth + 32 : 300; // 32px is the gap (2rem)
   };
