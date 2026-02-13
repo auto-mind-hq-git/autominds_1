@@ -183,6 +183,8 @@ const invalidateCache = (cacheKey) => {
 };
 
 export const DataService = {
+    isInitialized: false,
+
     // Seeding Function
     seedDatabase: async () => {
         try {
