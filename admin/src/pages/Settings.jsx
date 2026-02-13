@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, RefreshCw, Database } from 'lucide-react';
+import { Save, RefreshCw, Database, Trash2 } from 'lucide-react';
 import { DataService } from '../services/dataService';
 
 const Settings = () => {
@@ -56,6 +56,32 @@ const Settings = () => {
                         'Seed Database with Default Data'
                     )}
                 </button>
+
+                <div className="mt-4 pt-4 border-t border-slate-700">
+                    <p className="text-slate-400 mb-4 text-sm">
+                        Notice duplicate entries in your dashboard? Run the cleanup tool.
+                    </p>
+                    <button
+                        onClick={async () => {
+                            if (!confirm("This will remove duplicate Projects, Services, and Testimonials. Continue?")) return;
+                            setSeedLoading(true);
+                            try {
+                                const result = await DataService.cleanupDuplicates();
+                                alert(`Cleanup Complete!\nRemoved:\n- ${result.services} Services\n- ${result.projects} Projects\n- ${result.testimonials} Testimonials`);
+                                window.location.reload();
+                            } catch (e) {
+                                alert("Error: " + e.message);
+                            } finally {
+                                setSeedLoading(false);
+                            }
+                        }}
+                        disabled={seedLoading}
+                        className="btn-secondary w-full md:w-auto text-red-400 hover:text-red-300 border-red-500/30 hover:border-red-500/50"
+                    >
+                        <Trash2 className="h-4 w-4 mr-2 inline" />
+                        Remove Duplicates
+                    </button>
+                </div>
             </div>
 
             <div className="card p-6 border border-slate-700 bg-slate-800/50 backdrop-blur-sm opacity-50 pointer-events-none">

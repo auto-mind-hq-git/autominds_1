@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DataService } from '../services/dataService';
 import { Plus, Edit2, Trash2, X, Save, MessageSquare, Quote } from 'lucide-react';
 
-const TestimonialModal = ({ isOpen, onClose, testimonial, onSave }) => {
+const TestimonialModal = ({ isOpen, onClose, testimonial, onSave, isSubmitting }) => {
     const [formData, setFormData] = useState({
         name: '',
         position: '',
@@ -51,7 +51,7 @@ const TestimonialModal = ({ isOpen, onClose, testimonial, onSave }) => {
                     <h2 className="text-xl font-bold text-white font-orbitron">
                         {testimonial ? 'Edit Testimonial' : 'Add New Testimonial'}
                     </h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+                    <button onClick={onClose} disabled={isSubmitting} className="text-slate-400 hover:text-white transition-colors disabled:opacity-50">
                         <X className="h-6 w-6" />
                     </button>
                 </div>
@@ -122,16 +122,27 @@ const TestimonialModal = ({ isOpen, onClose, testimonial, onSave }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-slate-300 bg-transparent border border-slate-600 rounded-lg hover:bg-slate-800 hover:text-white transition-colors"
+                            disabled={isSubmitting}
+                            className="px-4 py-2 text-sm font-medium text-slate-300 bg-transparent border border-slate-600 rounded-lg hover:bg-slate-800 hover:text-white transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-6 py-2 text-sm font-medium text-white bg-cyan-600 rounded-lg hover:bg-cyan-500 shadow-lg shadow-cyan-500/20 flex items-center transition-all"
+                            disabled={isSubmitting}
+                            className="px-6 py-2 text-sm font-medium text-white bg-cyan-600 rounded-lg hover:bg-cyan-500 shadow-lg shadow-cyan-500/20 flex items-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Save className="h-4 w-4 mr-2" />
-                            Save
+                            {isSubmitting ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2"></div>
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Save
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>
@@ -143,14 +154,21 @@ const TestimonialModal = ({ isOpen, onClose, testimonial, onSave }) => {
 const Testimonials = () => {
     const [testimonials, setTestimonials] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentTestimonial, setCurrentTestimonial] = useState(null);
 
     const fetchTestimonials = async () => {
-        setLoading(true);
-        const data = await DataService.getTestimonials();
-        setTestimonials(data);
-        setLoading(false);
+        try {
+            setLoading(true);
+            const data = await DataService.getTestimonials();
+            setTestimonials(data || []);
+        } catch (error) {
+            console.error("Error fetching testimonials:", error);
+            alert("Failed to load testimonials.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -168,16 +186,30 @@ const Testimonials = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this testimonial?')) {
+        if (!window.confirm('Are you sure you want to delete this testimonial?')) return;
+
+        try {
             await DataService.deleteTestimonial(id);
+            setTestimonials(prev => prev.filter(t => t.id !== id));
+        } catch (error) {
+            console.error("Error deleting testimonial:", error);
+            alert("Failed to delete testimonial.");
             fetchTestimonials();
         }
     };
 
     const handleSave = async (data) => {
-        await DataService.saveTestimonial(data);
-        setIsModalOpen(false);
-        fetchTestimonials();
+        setIsSubmitting(true);
+        try {
+            await DataService.saveTestimonial(data);
+            setIsModalOpen(false);
+            fetchTestimonials();
+        } catch (error) {
+            console.error("Error saving testimonial:", error);
+            alert("Failed to save testimonial.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -247,6 +279,7 @@ const Testimonials = () => {
                 onClose={() => setIsModalOpen(false)}
                 testimonial={currentTestimonial}
                 onSave={handleSave}
+                isSubmitting={isSubmitting}
             />
         </div>
     );

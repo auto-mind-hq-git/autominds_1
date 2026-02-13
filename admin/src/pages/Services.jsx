@@ -7,21 +7,21 @@ const IconMap = {
     Bot, Globe, Brain, Zap, Clock, Activity, TrendingUp, Target, Server
 };
 
-const ServiceModal = ({ isOpen, onClose, service, onSave }) => {
+const ServiceModal = ({ isOpen, onClose, service, onSave, isSubmitting }) => {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         icon: 'Bot',
         ctaText: '',
-        metrics: [
-            { label: '', value: '', icon: 'Zap' },
-            { label: '', value: '', icon: 'Clock' }
-        ]
+        metrics: []
     });
 
     useEffect(() => {
         if (service) {
-            setFormData(service);
+            setFormData({
+                ...service,
+                metrics: service.metrics || []
+            });
         } else {
             setFormData({
                 title: '',
@@ -29,8 +29,7 @@ const ServiceModal = ({ isOpen, onClose, service, onSave }) => {
                 icon: 'Bot',
                 ctaText: 'Learn More',
                 metrics: [
-                    { label: 'Metric 1', value: 'Value 1', icon: 'Zap' },
-                    { label: 'Metric 2', value: 'Value 2', icon: 'Clock' }
+                    { label: 'Metric 1', value: 'Value 1', icon: 'Zap' }
                 ]
             });
         }
@@ -49,6 +48,20 @@ const ServiceModal = ({ isOpen, onClose, service, onSave }) => {
         setFormData(prev => ({ ...prev, metrics: newMetrics }));
     };
 
+    const addMetric = () => {
+        setFormData(prev => ({
+            ...prev,
+            metrics: [...prev.metrics, { label: '', value: '', icon: 'Zap' }]
+        }));
+    };
+
+    const removeMetric = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            metrics: prev.metrics.filter((_, i) => i !== index)
+        }));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         onSave(formData);
@@ -61,7 +74,7 @@ const ServiceModal = ({ isOpen, onClose, service, onSave }) => {
                     <h2 className="text-xl font-bold text-white font-orbitron">
                         {service ? 'Edit Service' : 'Add New Service'}
                     </h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+                    <button onClick={onClose} disabled={isSubmitting} className="text-slate-400 hover:text-white transition-colors disabled:opacity-50">
                         <X className="h-6 w-6" />
                     </button>
                 </div>
@@ -103,30 +116,48 @@ const ServiceModal = ({ isOpen, onClose, service, onSave }) => {
                         ></textarea>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        {formData.metrics.map((metric, index) => (
-                            <div key={index} className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                                <h4 className="text-sm font-semibold text-cyan-400">Metric {index + 1}</h4>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-400 mb-1">Label</label>
-                                    <input
-                                        type="text"
-                                        value={metric.label}
-                                        onChange={(e) => handleMetricChange(index, 'label', e.target.value)}
-                                        className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white focus:outline-none focus:border-cyan-500"
-                                    />
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <label className="block text-sm font-medium text-slate-300">Metrics (Key Performance Indicators)</label>
+                            <button type="button" onClick={addMetric} className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center">
+                                <Plus className="h-3 w-3 mr-1" /> Add Metric
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {formData.metrics.map((metric, index) => (
+                                <div key={index} className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700 relative group">
+                                    <button
+                                        type="button"
+                                        onClick={() => removeMetric(index)}
+                                        className="absolute top-2 right-2 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                    <h4 className="text-sm font-semibold text-cyan-400">Metric {index + 1}</h4>
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-400 mb-1">Label</label>
+                                        <input
+                                            type="text"
+                                            value={metric.label}
+                                            onChange={(e) => handleMetricChange(index, 'label', e.target.value)}
+                                            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white focus:outline-none focus:border-cyan-500"
+                                            placeholder="e.g. Savings"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-400 mb-1">Value</label>
+                                        <input
+                                            type="text"
+                                            value={metric.value}
+                                            onChange={(e) => handleMetricChange(index, 'value', e.target.value)}
+                                            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white focus:outline-none focus:border-cyan-500"
+                                            placeholder="e.g. 60%"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-400 mb-1">Value</label>
-                                    <input
-                                        type="text"
-                                        value={metric.value}
-                                        onChange={(e) => handleMetricChange(index, 'value', e.target.value)}
-                                        className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white focus:outline-none focus:border-cyan-500"
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
 
                     <div>
@@ -144,16 +175,27 @@ const ServiceModal = ({ isOpen, onClose, service, onSave }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-slate-300 bg-transparent border border-slate-600 rounded-lg hover:bg-slate-800 hover:text-white transition-colors"
+                            disabled={isSubmitting}
+                            className="px-4 py-2 text-sm font-medium text-slate-300 bg-transparent border border-slate-600 rounded-lg hover:bg-slate-800 hover:text-white transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-6 py-2 text-sm font-medium text-white bg-cyan-600 rounded-lg hover:bg-cyan-500 shadow-lg shadow-cyan-500/20 flex items-center transition-all"
+                            disabled={isSubmitting}
+                            className="px-6 py-2 text-sm font-medium text-white bg-cyan-600 rounded-lg hover:bg-cyan-500 shadow-lg shadow-cyan-500/20 flex items-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Save className="h-4 w-4 mr-2" />
-                            Save Service
+                            {isSubmitting ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2"></div>
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Save Service
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>
@@ -165,14 +207,21 @@ const ServiceModal = ({ isOpen, onClose, service, onSave }) => {
 const Services = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentService, setCurrentService] = useState(null);
 
     const fetchServices = async () => {
-        setLoading(true);
-        const data = await DataService.getServices();
-        setServices(data);
-        setLoading(false);
+        try {
+            setLoading(true);
+            const data = await DataService.getServices();
+            setServices(data || []);
+        } catch (error) {
+            console.error("Error fetching services:", error);
+            alert("Failed to load services. Please try refreshing the page.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -190,16 +239,31 @@ const Services = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this service?')) {
+        if (!window.confirm('Are you sure you want to delete this service?')) return;
+
+        try {
             await DataService.deleteService(id);
-            fetchServices();
+            // Optimistic update
+            setServices(prev => prev.filter(s => s.id !== id));
+        } catch (error) {
+            console.error("Error deleting service:", error);
+            alert("Failed to delete service. Please try again.");
+            fetchServices(); // Revert on error
         }
     };
 
     const handleSave = async (serviceData) => {
-        await DataService.saveService(serviceData);
-        setIsModalOpen(false);
-        fetchServices();
+        setIsSubmitting(true);
+        try {
+            await DataService.saveService(serviceData);
+            setIsModalOpen(false);
+            fetchServices();
+        } catch (error) {
+            console.error("Error saving service:", error);
+            alert("Failed to save service. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -233,7 +297,8 @@ const Services = () => {
                                     <p className="text-slate-400 text-sm mb-4 line-clamp-3 leading-relaxed">{service.description}</p>
 
                                     <div className="grid grid-cols-2 gap-4 mb-4">
-                                        {service.metrics.map((metric, idx) => (
+                                        {/* Ensure metrics is an array before mapping */}
+                                        {(service.metrics || []).map((metric, idx) => (
                                             <div key={idx} className="bg-slate-900/50 p-3 rounded border border-slate-800">
                                                 <span className="block text-xs text-slate-500 uppercase tracking-wider mb-1">{metric.label}</span>
                                                 <span className="block text-sm font-bold text-cyan-400">{metric.value}</span>
@@ -245,12 +310,14 @@ const Services = () => {
                                     <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{service.ctaText}</span>
                                     <div className="flex space-x-2">
                                         <button
+                                            aria-label="Edit Service"
                                             onClick={() => handleEdit(service)}
                                             className="p-2 text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-full transition-colors"
                                         >
                                             <Edit2 className="h-4 w-4" />
                                         </button>
                                         <button
+                                            aria-label="Delete Service"
                                             onClick={() => handleDelete(service.id)}
                                             className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
                                         >
@@ -269,6 +336,7 @@ const Services = () => {
                 onClose={() => setIsModalOpen(false)}
                 service={currentService}
                 onSave={handleSave}
+                isSubmitting={isSubmitting}
             />
         </div>
     );

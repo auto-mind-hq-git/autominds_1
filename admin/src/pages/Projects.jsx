@@ -2,29 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { DataService } from '../services/dataService';
 import { Plus, Edit2, Trash2, X, Save, Search, Filter, Briefcase } from 'lucide-react';
 
-const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
+const ProjectModal = ({ isOpen, onClose, project, onSave, isSubmitting }) => {
     const [formData, setFormData] = useState({
         title: '',
         category: 'AI Automation',
         description: '',
-        metrics: [
-            { label: 'Metric 1', value: '' },
-            { label: 'Metric 2', value: '' }
-        ],
+        metrics: [],
         status: 'Active'
     });
 
     useEffect(() => {
         if (project) {
-            setFormData(project);
+            setFormData({
+                ...project,
+                metrics: project.metrics || []
+            });
         } else {
             setFormData({
                 title: '',
                 category: 'AI Automation',
                 description: '',
                 metrics: [
-                    { label: 'Metric 1', value: '' },
-                    { label: 'Metric 2', value: '' }
+                    { label: 'Metric 1', value: '' }
                 ],
                 status: 'Active'
             });
@@ -44,6 +43,20 @@ const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
         setFormData(prev => ({ ...prev, metrics: newMetrics }));
     };
 
+    const addMetric = () => {
+        setFormData(prev => ({
+            ...prev,
+            metrics: [...prev.metrics, { label: '', value: '' }]
+        }));
+    };
+
+    const removeMetric = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            metrics: prev.metrics.filter((_, i) => i !== index)
+        }));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         onSave(formData);
@@ -56,7 +69,7 @@ const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
                     <h2 className="text-xl font-bold text-white font-orbitron">
                         {project ? 'Edit Project' : 'Add New Project'}
                     </h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+                    <button onClick={onClose} disabled={isSubmitting} className="text-slate-400 hover:text-white transition-colors disabled:opacity-50">
                         <X className="h-6 w-6" />
                     </button>
                 </div>
@@ -102,30 +115,48 @@ const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
                         ></textarea>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        {formData.metrics.map((metric, index) => (
-                            <div key={index} className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                                <h4 className="text-sm font-semibold text-cyan-400">Metric {index + 1}</h4>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-400 mb-1">Label</label>
-                                    <input
-                                        type="text"
-                                        value={metric.label}
-                                        onChange={(e) => handleMetricChange(index, 'label', e.target.value)}
-                                        className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white focus:outline-none focus:border-cyan-500"
-                                    />
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <label className="block text-sm font-medium text-slate-300">Metrics (Results & Impact)</label>
+                            <button type="button" onClick={addMetric} className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center">
+                                <Plus className="h-3 w-3 mr-1" /> Add Metric
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {formData.metrics.map((metric, index) => (
+                                <div key={index} className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700 relative group">
+                                    <button
+                                        type="button"
+                                        onClick={() => removeMetric(index)}
+                                        className="absolute top-2 right-2 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                    <h4 className="text-sm font-semibold text-cyan-400">Metric {index + 1}</h4>
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-400 mb-1">Label</label>
+                                        <input
+                                            type="text"
+                                            value={metric.label}
+                                            onChange={(e) => handleMetricChange(index, 'label', e.target.value)}
+                                            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white focus:outline-none focus:border-cyan-500"
+                                            placeholder="e.g. Time Saved"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-400 mb-1">Value</label>
+                                        <input
+                                            type="text"
+                                            value={metric.value}
+                                            onChange={(e) => handleMetricChange(index, 'value', e.target.value)}
+                                            className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white focus:outline-none focus:border-cyan-500"
+                                            placeholder="e.g. 50%"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-400 mb-1">Value</label>
-                                    <input
-                                        type="text"
-                                        value={metric.value}
-                                        onChange={(e) => handleMetricChange(index, 'value', e.target.value)}
-                                        className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm text-white focus:outline-none focus:border-cyan-500"
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
 
                     <div>
@@ -146,16 +177,27 @@ const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-slate-300 bg-transparent border border-slate-600 rounded-lg hover:bg-slate-800 hover:text-white transition-colors"
+                            disabled={isSubmitting}
+                            className="px-4 py-2 text-sm font-medium text-slate-300 bg-transparent border border-slate-600 rounded-lg hover:bg-slate-800 hover:text-white transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-6 py-2 text-sm font-medium text-white bg-cyan-600 rounded-lg hover:bg-cyan-500 shadow-lg shadow-cyan-500/20 flex items-center transition-all"
+                            disabled={isSubmitting}
+                            className="px-6 py-2 text-sm font-medium text-white bg-cyan-600 rounded-lg hover:bg-cyan-500 shadow-lg shadow-cyan-500/20 flex items-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Save className="h-4 w-4 mr-2" />
-                            Save Project
+                            {isSubmitting ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2"></div>
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Save Project
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>
@@ -167,15 +209,22 @@ const ProjectModal = ({ isOpen, onClose, project, onSave }) => {
 const Projects = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentProject, setCurrentProject] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     const fetchProjects = async () => {
-        setLoading(true);
-        const data = await DataService.getProjects();
-        setProjects(data);
-        setLoading(false);
+        try {
+            setLoading(true);
+            const data = await DataService.getProjects();
+            setProjects(data || []);
+        } catch (error) {
+            console.error("Error fetching projects:", error);
+            alert("Failed to load projects.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -193,16 +242,30 @@ const Projects = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this project?')) {
+        if (!window.confirm('Are you sure you want to delete this project?')) return;
+
+        try {
             await DataService.deleteProject(id);
+            setProjects(prev => prev.filter(p => p.id !== id));
+        } catch (error) {
+            console.error("Error deleting project:", error);
+            alert("Failed to delete project.");
             fetchProjects();
         }
     };
 
     const handleSave = async (projectData) => {
-        await DataService.saveProject(projectData);
-        setIsModalOpen(false);
-        fetchProjects();
+        setIsSubmitting(true);
+        try {
+            await DataService.saveProject(projectData);
+            setIsModalOpen(false);
+            fetchProjects();
+        } catch (error) {
+            console.error("Error saving project:", error);
+            alert("Failed to save project.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const filteredProjects = projects.filter(project =>
@@ -274,25 +337,33 @@ const Projects = () => {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-white font-medium">
-                                                    {project.metrics[0]?.value} <span className="text-slate-500 text-xs font-normal">({project.metrics[0]?.label})</span>
+                                                    {(project.metrics && project.metrics[0]) ? (
+                                                        <>
+                                                            {project.metrics[0].value} <span className="text-slate-500 text-xs font-normal">({project.metrics[0].label})</span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-slate-500 text-xs">No metrics</span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${project.status === 'Active'
-                                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                                        : 'bg-slate-700/50 text-slate-400 border-slate-600'
+                                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                    : 'bg-slate-700/50 text-slate-400 border-slate-600'
                                                     }`}>
                                                     {project.status}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <button
+                                                    aria-label="Edit project"
                                                     onClick={() => handleEdit(project)}
                                                     className="text-slate-400 hover:text-cyan-400 mr-4 transition-colors p-1"
                                                 >
                                                     <Edit2 className="h-4 w-4" />
                                                 </button>
                                                 <button
+                                                    aria-label="Delete project"
                                                     onClick={() => handleDelete(project.id)}
                                                     className="text-slate-400 hover:text-red-400 transition-colors p-1"
                                                 >
@@ -314,7 +385,7 @@ const Projects = () => {
                 )}
             </div>
 
-            <ProjectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} project={currentProject} onSave={handleSave} />
+            <ProjectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} project={currentProject} onSave={handleSave} isSubmitting={isSubmitting} />
         </div>
     );
 };

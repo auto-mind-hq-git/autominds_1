@@ -22,9 +22,9 @@ const Dashboard = () => {
                     DataService.getTestimonials()
                 ]);
                 setCounts({
-                    projects: projects.length,
-                    services: services.length,
-                    testimonials: testimonials.length
+                    projects: (projects || []).length,
+                    services: (services || []).length,
+                    testimonials: (testimonials || []).length
                 });
             } catch (error) {
                 console.error("Failed to fetch dashboard data", error);
@@ -41,13 +41,7 @@ const Dashboard = () => {
         { label: 'Total Projects', value: loading ? '...' : counts.projects.toString(), icon: Briefcase, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
         { label: 'Active Services', value: loading ? '...' : counts.services.toString(), icon: Layers, color: 'text-purple-400', bg: 'bg-purple-500/10' },
         { label: 'Client Testimonials', value: loading ? '...' : counts.testimonials.toString(), icon: Users, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-        { label: 'Last Updated', value: 'Just now', icon: Activity, color: 'text-orange-400', bg: 'bg-orange-500/10' },
-    ];
-
-    const activities = [
-        { id: 1, text: 'System Synchronized with Main Website', time: 'Just now' },
-        { id: 2, text: 'Real Data Loaded Successfully', time: '1 minute ago' },
-        { id: 3, text: 'Admin Panel Theme Updated to Cosmic', time: '5 minutes ago' },
+        { label: 'System Status', value: 'Online', icon: Activity, color: 'text-orange-400', bg: 'bg-orange-500/10' },
     ];
 
     return (
@@ -71,22 +65,36 @@ const Dashboard = () => {
                 })}
             </div>
 
-            <div className="card overflow-hidden border border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-                <div className="px-6 py-4 border-b border-slate-700">
-                    <h2 className="text-lg font-medium text-white">Recent Activity</h2>
+            {/* Quick Actions / Getting Started */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="card border border-slate-700 bg-slate-800/50 backdrop-blur-sm p-6">
+                    <h2 className="text-lg font-medium text-white mb-4">Quick Actions</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                        <a href="/projects" className="p-4 bg-slate-700/50 rounded-lg border border-slate-600 hover:bg-slate-700 transition-colors text-center text-sm text-slate-300">
+                            Manage Projects
+                        </a>
+                        <a href="/services" className="p-4 bg-slate-700/50 rounded-lg border border-slate-600 hover:bg-slate-700 transition-colors text-center text-sm text-slate-300">
+                            Edit Services
+                        </a>
+                    </div>
                 </div>
-                <div className="p-6">
-                    <ul className="space-y-4">
-                        {activities.map((activity) => (
-                            <li key={activity.id} className="flex items-start pb-4 border-b border-slate-700/50 last:border-0 last:pb-0">
-                                <div className="h-2 w-2 mt-2 rounded-full bg-cyan-500 mr-4 shadow-[0_0_8px_rgba(6,182,212,0.6)]"></div>
-                                <div className="flex-1">
-                                    <p className="text-sm text-slate-200 font-medium">{activity.text}</p>
-                                    <p className="text-xs text-slate-500 mt-0.5">{activity.time}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+
+                <div className="card border border-slate-700 bg-slate-800/50 backdrop-blur-sm p-6">
+                    <h2 className="text-lg font-medium text-white mb-2">System Health</h2>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center text-sm text-slate-400 border-b border-slate-700/50 pb-2">
+                            <span>Database Connection</span>
+                            <span className="text-emerald-400 font-medium">Connected</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm text-slate-400 border-b border-slate-700/50 pb-2">
+                            <span>Last Sync</span>
+                            <span className="text-slate-300">Real-time</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm text-slate-400">
+                            <span>Admin Version</span>
+                            <span className="text-slate-500">v1.0.2</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
