@@ -217,6 +217,9 @@ const Projects = () => {
     const fetchProjects = async () => {
         try {
             setLoading(true);
+            // Ensure DB has data
+            await DataService.checkAndSeedDatabase();
+
             const data = await DataService.getProjects();
             setProjects(data || []);
         } catch (error) {

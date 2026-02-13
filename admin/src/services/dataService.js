@@ -222,12 +222,11 @@ export const DataService = {
     // Check if DB is empty and seed if necessary
     checkAndSeedDatabase: async () => {
         try {
-            // Check local storage flag first to avoid unnecessary Firestore reads
-            if (localStorage.getItem('autominds_db_seeded')) {
-                return false;
-            }
-
+            // Check local storage AND database to be safe
+            // If localStorage says seeded, we still do a quick check if services are empty
+            // This prevents "Empty Dashboard" issues if data was wiped externally
             const servicesSnapshot = await getDocs(collection(db, COLLECTIONS.SERVICES));
+
             if (servicesSnapshot.empty) {
                 console.log("Database appears empty. Auto-seeding default data...");
                 await DataService.seedDatabase();
@@ -235,12 +234,61 @@ export const DataService = {
                 return true; // Seeded
             }
 
-            // If not empty, set flag so we don't check again
-            localStorage.setItem('autominds_db_seeded', 'true');
+            // If not empty, ensure flag is set
+            if (!localStorage.getItem('autominds_db_seeded')) {
+                localStorage.setItem('autominds_db_seeded', 'true');
+            }
+
             return false; // Already has data
         } catch (error) {
             console.error("Error checking database:", error);
             return false;
+        }
+    },
+
+    // Remove duplicates
+    cleanupDuplicates: async () => {
+        try {
+            console.log("Starting cleanup...");
+            const stats = { services: 0, projects: 0, testimonials: 0 };
+
+            const cleanupCollection = async (collectionName, key) => {
+                const snapshot = await getDocs(collection(db, collectionName));
+                const seen = new Set();
+                const duplicates = [];
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Use title or name as unique key
+                    const identifier = data.title || data.name;
+                    if (identifier) {
+                        if (seen.has(identifier)) {
+                            duplicates.push(doc.id);
+                        } else {
+                            seen.add(identifier);
+                        }
+                    }
+                });
+
+                for (const id of duplicates) {
+                    await deleteDoc(doc(db, collectionName, id));
+                    stats[key]++;
+                }
+            };
+
+            await cleanupCollection(COLLECTIONS.SERVICES, 'services');
+            await cleanupCollection(COLLECTIONS.PROJECTS, 'projects');
+            await cleanupCollection(COLLECTIONS.TESTIMONIALS, 'testimonials');
+
+            // Invalidate caches
+            invalidateCache('services');
+            invalidateCache('projects');
+            invalidateCache('testimonials');
+
+            return stats;
+        } catch (error) {
+            console.error("Error cleaning duplicates:", error);
+            throw error;
         }
     },
 

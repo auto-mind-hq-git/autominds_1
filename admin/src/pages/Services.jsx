@@ -214,6 +214,9 @@ const Services = () => {
     const fetchServices = async () => {
         try {
             setLoading(true);
+            // Ensure DB has data
+            await DataService.checkAndSeedDatabase();
+
             const data = await DataService.getServices();
             setServices(data || []);
         } catch (error) {

@@ -161,6 +161,9 @@ const Testimonials = () => {
     const fetchTestimonials = async () => {
         try {
             setLoading(true);
+            // Ensure DB has data
+            await DataService.checkAndSeedDatabase();
+
             const data = await DataService.getTestimonials();
             setTestimonials(data || []);
         } catch (error) {
