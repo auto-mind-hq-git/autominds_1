@@ -1498,6 +1498,12 @@ ul {
 }
 
 @media (max-width: 768px) {
+    .footer {
+        margin-top: 0;
+        padding-top: 0;
+        padding-bottom: 2rem;
+    }
+
     .footer-content {
         flex-direction: column-reverse;
         /* Copyright below social on mobile */
