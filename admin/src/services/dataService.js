@@ -222,11 +222,14 @@ export const DataService = {
     },
 
     // Check if DB is empty and seed if necessary
-    checkAndSeedDatabase: async () => {
+    checkAndSeedDatabase: async (forceCheck = false) => {
         try {
             // Check local storage AND database to be safe
-            // If localStorage says seeded, we still do a quick check if services are empty
-            // This prevents "Empty Dashboard" issues if data was wiped externally
+            // If localStorage says seeded and we are not forcing a check, trust it
+            if (!forceCheck && localStorage.getItem('autominds_db_seeded')) {
+                return false;
+            }
+
             const servicesSnapshot = await getDocs(collection(db, COLLECTIONS.SERVICES));
 
             if (servicesSnapshot.empty) {

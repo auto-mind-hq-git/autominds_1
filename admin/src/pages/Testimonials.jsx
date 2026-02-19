@@ -167,7 +167,8 @@ const Testimonials = () => {
 
             // Only check seeding if data is empty
             if (!data || data.length === 0) {
-                const seeded = await DataService.checkAndSeedDatabase();
+                // FORCE a check because data is visibly empty
+                const seeded = await DataService.checkAndSeedDatabase(true);
                 if (seeded) {
                     data = await DataService.getTestimonials();
                 }

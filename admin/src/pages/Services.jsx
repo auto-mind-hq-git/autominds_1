@@ -220,7 +220,8 @@ const Services = () => {
 
             // Only check seeding if data is empty
             if (!data || data.length === 0) {
-                const seeded = await DataService.checkAndSeedDatabase();
+                // FORCE a check because data is visibly empty, ignoring localStorage
+                const seeded = await DataService.checkAndSeedDatabase(true);
                 if (seeded) {
                     // If we just seeded, fetch again
                     data = await DataService.getServices();
