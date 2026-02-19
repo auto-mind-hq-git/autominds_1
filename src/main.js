@@ -310,19 +310,42 @@ const preloadImages = () => {
 };
 
 // Set canvas dimensions (High-DPI Support with Performance Cap)
-const setCanvasDimensions = () => {
+// Track previous width to avoid unnecessary resets from mobile address bar changes
+let lastCanvasWidth = 0;
+let lastCanvasHeight = 0;
+
+const setCanvasDimensions = (force = false) => {
   // Get device pixel ratio, capped at 2 to avoid mobile overheating
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
   // Performance Optimization: Cap max internal width to 2560px (QHD)
-  // Rendering native 4K (3840px) on canvas often causes stutters/jank
-  const maxWidth = 3000; // Slightly above QHD, well below 4K
+  const maxWidth = 3000;
   if (window.innerWidth * dpr > maxWidth) {
     dpr = maxWidth / window.innerWidth;
   }
 
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
+  const newWidth = Math.floor(window.innerWidth * dpr);
+  const newHeight = Math.floor(window.innerHeight * dpr);
+
+  // On mobile, the address bar hiding/showing changes only height.
+  // Only reset canvas if width changed OR this is the initial call (force).
+  // Resetting canvas.width/height clears the canvas, causing visible flicker.
+  const widthChanged = newWidth !== lastCanvasWidth;
+  const heightChanged = newHeight !== lastCanvasHeight;
+
+  if (force || widthChanged) {
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    lastCanvasWidth = newWidth;
+    lastCanvasHeight = newHeight;
+    // Immediately redraw after resize to prevent blank canvas
+    drawImage(Math.floor(currentFrameIndex));
+  } else if (heightChanged) {
+    // Height-only change (mobile address bar): update height but redraw immediately
+    canvas.height = newHeight;
+    lastCanvasHeight = newHeight;
+    drawImage(Math.floor(currentFrameIndex));
+  }
 };
 
 // Draw logic with "cover" effect
@@ -354,7 +377,7 @@ const drawImage = (index) => {
 
 // Initial setup
 preloadImages();
-setCanvasDimensions();
+setCanvasDimensions(true); // Force initial setup
 
 // Wait for first image then draw
 images[0].onload = () => {
@@ -377,7 +400,7 @@ let maxScroll = document.body.scrollHeight - window.innerHeight;
 
 window.addEventListener('resize', () => {
   maxScroll = document.body.scrollHeight - window.innerHeight;
-  setCanvasDimensions(); // Existing canvas resize
+  // Note: setCanvasDimensions is called by the debounced resize handler below
 });
 
 window.addEventListener('scroll', () => {
@@ -532,17 +555,22 @@ const renderLoop = () => {
   requestAnimationFrame(renderLoop);
 };
 
-// Resize Handler
+// Resize Handler — debounced to prevent mobile address bar flicker
+let resizeTimer = null;
 window.addEventListener('resize', () => {
-  setCanvasDimensions();
-  // Ensure target is correct for new dimensions
-  const scrollTop = window.scrollY;
-  const maxScroll = document.body.scrollHeight - window.innerHeight;
-  const scrollFraction = scrollTop / maxScroll;
-  targetFrameIndex = Math.min(
-    totalFrames - 1,
-    Math.floor(scrollFraction * totalFrames)
-  );
+  // Cancel any pending resize to debounce rapid changes
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    setCanvasDimensions();
+    // Ensure target is correct for new dimensions
+    const scrollTop = window.scrollY;
+    const currentMaxScroll = document.body.scrollHeight - window.innerHeight;
+    const scrollFraction = currentMaxScroll > 0 ? scrollTop / currentMaxScroll : 0;
+    targetFrameIndex = Math.min(
+      totalFrames - 1,
+      Math.max(0, Math.floor(scrollFraction * totalFrames))
+    );
+  }, 100); // 100ms debounce
 });
 
 // Start loop

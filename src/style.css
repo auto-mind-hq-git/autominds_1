@@ -28,16 +28,17 @@
 
 html {
     scroll-behavior: smooth;
+    background-color: #0a1628;
+    /* Dark fallback on html element; canvas sits between html and body */
 }
 
 body {
     font-family: var(--font-body);
-    background-color: #0a1628;
-    /* Fallback */
+    background-color: transparent;
+    /* Transparent so the fixed canvas (z-index: -1) shows through */
     color: var(--color-text-main);
     overflow-x: hidden;
     line-height: 1.6;
-    /* min-height removed to fit content naturally */
 }
 
 /* Fixed canvas for scroll animation */
@@ -48,7 +49,7 @@ body {
     width: 100%;
     height: 100%;
     z-index: -1;
-    object-fit: cover;
+    /* Sits between html bg and body content */
 }
 
 h1,
