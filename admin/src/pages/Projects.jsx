@@ -217,10 +217,18 @@ const Projects = () => {
     const fetchProjects = async () => {
         try {
             setLoading(true);
-            // Ensure DB has data
-            await DataService.checkAndSeedDatabase();
 
-            const data = await DataService.getProjects();
+            // Try fetching data first (fastest path)
+            let data = await DataService.getProjects();
+
+            // Only check seeding if data is empty
+            if (!data || data.length === 0) {
+                const seeded = await DataService.checkAndSeedDatabase();
+                if (seeded) {
+                    data = await DataService.getProjects();
+                }
+            }
+
             setProjects(data || []);
         } catch (error) {
             console.error("Error fetching projects:", error);

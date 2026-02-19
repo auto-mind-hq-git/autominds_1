@@ -161,10 +161,18 @@ const Testimonials = () => {
     const fetchTestimonials = async () => {
         try {
             setLoading(true);
-            // Ensure DB has data
-            await DataService.checkAndSeedDatabase();
 
-            const data = await DataService.getTestimonials();
+            // Try fetching data first (fastest path)
+            let data = await DataService.getTestimonials();
+
+            // Only check seeding if data is empty
+            if (!data || data.length === 0) {
+                const seeded = await DataService.checkAndSeedDatabase();
+                if (seeded) {
+                    data = await DataService.getTestimonials();
+                }
+            }
+
             setTestimonials(data || []);
         } catch (error) {
             console.error("Error fetching testimonials:", error);

@@ -214,10 +214,19 @@ const Services = () => {
     const fetchServices = async () => {
         try {
             setLoading(true);
-            // Ensure DB has data
-            await DataService.checkAndSeedDatabase();
 
-            const data = await DataService.getServices();
+            // Try fetching data first (fastest path)
+            let data = await DataService.getServices();
+
+            // Only check seeding if data is empty
+            if (!data || data.length === 0) {
+                const seeded = await DataService.checkAndSeedDatabase();
+                if (seeded) {
+                    // If we just seeded, fetch again
+                    data = await DataService.getServices();
+                }
+            }
+
             setServices(data || []);
         } catch (error) {
             console.error("Error fetching services:", error);
