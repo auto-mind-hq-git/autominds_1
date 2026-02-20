@@ -164,15 +164,7 @@ const Testimonials = () => {
             setLoading(true);
             setError(null);
 
-            let data = await DataService.getTestimonials();
-
-            if (!data || data.length === 0) {
-                const seeded = await DataService.checkAndSeedDatabase(true);
-                if (seeded) {
-                    data = await DataService.getTestimonials();
-                }
-            }
-
+            const data = await DataService.getTestimonials();
             setTestimonials(data || []);
         } catch (error) {
             console.error("Error fetching testimonials:", error);

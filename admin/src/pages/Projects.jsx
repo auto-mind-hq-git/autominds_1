@@ -220,15 +220,7 @@ const Projects = () => {
             setLoading(true);
             setError(null);
 
-            let data = await DataService.getProjects();
-
-            if (!data || data.length === 0) {
-                const seeded = await DataService.checkAndSeedDatabase(true);
-                if (seeded) {
-                    data = await DataService.getProjects();
-                }
-            }
-
+            const data = await DataService.getProjects();
             setProjects(data || []);
         } catch (error) {
             console.error("Error fetching projects:", error);

@@ -13,8 +13,19 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Auto-seed if empty
-                await DataService.checkAndSeedDatabase();
+                // Auto-cleanup duplicates once per session
+                if (!sessionStorage.getItem('autominds_cleanup_done')) {
+                    try {
+                        const stats = await DataService.cleanupDuplicates();
+                        const total = stats.services + stats.projects + stats.testimonials;
+                        if (total > 0) {
+                            console.log(`Cleaned ${total} duplicates:`, stats);
+                        }
+                        sessionStorage.setItem('autominds_cleanup_done', 'true');
+                    } catch (cleanupErr) {
+                        console.warn("Cleanup skipped:", cleanupErr.message);
+                    }
+                }
 
                 const [projects, services, testimonials] = await Promise.all([
                     DataService.getProjects(),
@@ -28,7 +39,6 @@ const Dashboard = () => {
                 });
             } catch (error) {
                 console.error("Failed to fetch dashboard data:", error);
-                // Don't block the dashboard, just show 0 counts
             } finally {
                 setLoading(false);
             }
