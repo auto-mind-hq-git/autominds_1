@@ -21,7 +21,7 @@ const cache = {
 };
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const FETCH_TIMEOUT = 15000; // 15 second timeout for Firestore calls
+const FETCH_TIMEOUT = 45000; // 45 second timeout for Firestore calls
 
 // Timeout wrapper - prevents Firestore calls from hanging forever
 const withTimeout = (promise, ms = FETCH_TIMEOUT) => {
