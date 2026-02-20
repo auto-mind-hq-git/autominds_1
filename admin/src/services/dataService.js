@@ -1,5 +1,5 @@
 import { db } from '../../../src/lib/firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
 // Collection Names
 const COLLECTIONS = {
@@ -21,6 +21,17 @@ const cache = {
 };
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const FETCH_TIMEOUT = 15000; // 15 second timeout for Firestore calls
+
+// Timeout wrapper - prevents Firestore calls from hanging forever
+const withTimeout = (promise, ms = FETCH_TIMEOUT) => {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`Firestore request timed out after ${ms / 1000}s. Check your internet connection.`)), ms)
+        )
+    ]);
+};
 
 // Default Data for Seeding
 const defaultServices = [
@@ -159,7 +170,7 @@ const fetchCollection = async (collectionName, cacheKey) => {
 
     try {
         console.log(`Fetching ${collectionName} from Firestore...`);
-        const querySnapshot = await getDocs(collection(db, collectionName));
+        const querySnapshot = await withTimeout(getDocs(collection(db, collectionName)));
         const items = [];
         querySnapshot.forEach((doc) => {
             items.push({ id: doc.id, ...doc.data() });
@@ -172,7 +183,8 @@ const fetchCollection = async (collectionName, cacheKey) => {
         return items;
     } catch (error) {
         console.error(`Error fetching ${collectionName}:`, error);
-        return [];
+        // Re-throw so the UI can show an error state instead of empty data
+        throw error;
     }
 };
 
@@ -206,7 +218,7 @@ export const DataService = {
                 batchPromises.push(addDoc(collection(db, COLLECTIONS.TESTIMONIALS), testimonial));
             }
 
-            await Promise.all(batchPromises);
+            await withTimeout(Promise.all(batchPromises), 30000);
             console.log("DB Seed Completed.");
 
             // Invalidate all caches after seed
@@ -225,12 +237,11 @@ export const DataService = {
     checkAndSeedDatabase: async (forceCheck = false) => {
         try {
             // Check local storage AND database to be safe
-            // If localStorage says seeded and we are not forcing a check, trust it
             if (!forceCheck && localStorage.getItem('autominds_db_seeded')) {
                 return false;
             }
 
-            const servicesSnapshot = await getDocs(collection(db, COLLECTIONS.SERVICES));
+            const servicesSnapshot = await withTimeout(getDocs(collection(db, COLLECTIONS.SERVICES)));
 
             if (servicesSnapshot.empty) {
                 console.log("Database appears empty. Auto-seeding default data...");
@@ -247,7 +258,7 @@ export const DataService = {
             return false; // Already has data
         } catch (error) {
             console.error("Error checking database:", error);
-            return false;
+            throw error;
         }
     },
 
@@ -258,13 +269,12 @@ export const DataService = {
             const stats = { services: 0, projects: 0, testimonials: 0 };
 
             const cleanupCollection = async (collectionName, key) => {
-                const snapshot = await getDocs(collection(db, collectionName));
+                const snapshot = await withTimeout(getDocs(collection(db, collectionName)));
                 const seen = new Set();
                 const duplicates = [];
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    // Use title or name as unique key
                     const identifier = data.title || data.name;
                     if (identifier) {
                         if (seen.has(identifier)) {
@@ -276,7 +286,7 @@ export const DataService = {
                 });
 
                 for (const id of duplicates) {
-                    await deleteDoc(doc(db, collectionName, id));
+                    await withTimeout(deleteDoc(doc(db, collectionName, id)));
                     stats[key]++;
                 }
             };
@@ -306,14 +316,12 @@ export const DataService = {
         try {
             let result;
             if (service.id) {
-                // Update
                 const docRef = doc(db, COLLECTIONS.SERVICES, service.id);
                 const { id, ...data } = service;
-                await updateDoc(docRef, data);
+                await withTimeout(updateDoc(docRef, data));
                 result = service;
             } else {
-                // Add
-                const docRef = await addDoc(collection(db, COLLECTIONS.SERVICES), service);
+                const docRef = await withTimeout(addDoc(collection(db, COLLECTIONS.SERVICES), service));
                 result = { id: docRef.id, ...service };
             }
             invalidateCache('services');
@@ -326,7 +334,7 @@ export const DataService = {
 
     deleteService: async (id) => {
         try {
-            await deleteDoc(doc(db, COLLECTIONS.SERVICES, id));
+            await withTimeout(deleteDoc(doc(db, COLLECTIONS.SERVICES, id)));
             invalidateCache('services');
             return true;
         } catch (error) {
@@ -346,10 +354,10 @@ export const DataService = {
             if (project.id) {
                 const docRef = doc(db, COLLECTIONS.PROJECTS, project.id);
                 const { id, ...data } = project;
-                await updateDoc(docRef, data);
+                await withTimeout(updateDoc(docRef, data));
                 result = project;
             } else {
-                const docRef = await addDoc(collection(db, COLLECTIONS.PROJECTS), project);
+                const docRef = await withTimeout(addDoc(collection(db, COLLECTIONS.PROJECTS), project));
                 result = { id: docRef.id, ...project };
             }
             invalidateCache('projects');
@@ -362,7 +370,7 @@ export const DataService = {
 
     deleteProject: async (id) => {
         try {
-            await deleteDoc(doc(db, COLLECTIONS.PROJECTS, id));
+            await withTimeout(deleteDoc(doc(db, COLLECTIONS.PROJECTS, id)));
             invalidateCache('projects');
             return true;
         } catch (error) {
@@ -382,10 +390,10 @@ export const DataService = {
             if (testimonial.id) {
                 const docRef = doc(db, COLLECTIONS.TESTIMONIALS, testimonial.id);
                 const { id, ...data } = testimonial;
-                await updateDoc(docRef, data);
+                await withTimeout(updateDoc(docRef, data));
                 result = testimonial;
             } else {
-                const docRef = await addDoc(collection(db, COLLECTIONS.TESTIMONIALS), testimonial);
+                const docRef = await withTimeout(addDoc(collection(db, COLLECTIONS.TESTIMONIALS), testimonial));
                 result = { id: docRef.id, ...testimonial };
             }
             invalidateCache('testimonials');
@@ -398,7 +406,7 @@ export const DataService = {
 
     deleteTestimonial: async (id) => {
         try {
-            await deleteDoc(doc(db, COLLECTIONS.TESTIMONIALS, id));
+            await withTimeout(deleteDoc(doc(db, COLLECTIONS.TESTIMONIALS, id)));
             invalidateCache('testimonials');
             return true;
         } catch (error) {

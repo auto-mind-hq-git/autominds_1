@@ -27,7 +27,8 @@ const Dashboard = () => {
                     testimonials: (testimonials || []).length
                 });
             } catch (error) {
-                console.error("Failed to fetch dashboard data", error);
+                console.error("Failed to fetch dashboard data:", error);
+                // Don't block the dashboard, just show 0 counts
             } finally {
                 setLoading(false);
             }

@@ -207,6 +207,7 @@ const ServiceModal = ({ isOpen, onClose, service, onSave, isSubmitting }) => {
 const Services = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentService, setCurrentService] = useState(null);
@@ -214,16 +215,15 @@ const Services = () => {
     const fetchServices = async () => {
         try {
             setLoading(true);
+            setError(null);
 
             // Try fetching data first (fastest path)
             let data = await DataService.getServices();
 
             // Only check seeding if data is empty
             if (!data || data.length === 0) {
-                // FORCE a check because data is visibly empty, ignoring localStorage
                 const seeded = await DataService.checkAndSeedDatabase(true);
                 if (seeded) {
-                    // If we just seeded, fetch again
                     data = await DataService.getServices();
                 }
             }
@@ -231,7 +231,7 @@ const Services = () => {
             setServices(data || []);
         } catch (error) {
             console.error("Error fetching services:", error);
-            alert("Failed to load services. Please try refreshing the page.");
+            setError(error.message || "Failed to load services. Please check your connection.");
         } finally {
             setLoading(false);
         }
@@ -293,8 +293,22 @@ const Services = () => {
             </div>
 
             {loading ? (
-                <div className="flex justify-center p-12">
+                <div className="flex flex-col items-center justify-center p-12 space-y-3">
                     <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-500"></div>
+                    <p className="text-sm text-slate-400">Loading services...</p>
+                </div>
+            ) : error ? (
+                <div className="flex flex-col items-center justify-center p-12 space-y-4 bg-slate-800/30 rounded-xl border border-red-500/20">
+                    <div className="text-red-400 text-center">
+                        <svg className="h-10 w-10 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                        <p className="text-sm font-medium">{error}</p>
+                    </div>
+                    <button
+                        onClick={fetchServices}
+                        className="px-4 py-2 text-sm font-medium text-white bg-cyan-600 rounded-lg hover:bg-cyan-500 transition-colors"
+                    >
+                        Try Again
+                    </button>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

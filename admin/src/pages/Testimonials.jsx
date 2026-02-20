@@ -154,6 +154,7 @@ const TestimonialModal = ({ isOpen, onClose, testimonial, onSave, isSubmitting }
 const Testimonials = () => {
     const [testimonials, setTestimonials] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentTestimonial, setCurrentTestimonial] = useState(null);
@@ -161,13 +162,11 @@ const Testimonials = () => {
     const fetchTestimonials = async () => {
         try {
             setLoading(true);
+            setError(null);
 
-            // Try fetching data first (fastest path)
             let data = await DataService.getTestimonials();
 
-            // Only check seeding if data is empty
             if (!data || data.length === 0) {
-                // FORCE a check because data is visibly empty
                 const seeded = await DataService.checkAndSeedDatabase(true);
                 if (seeded) {
                     data = await DataService.getTestimonials();
@@ -177,7 +176,7 @@ const Testimonials = () => {
             setTestimonials(data || []);
         } catch (error) {
             console.error("Error fetching testimonials:", error);
-            alert("Failed to load testimonials.");
+            setError(error.message || "Failed to load testimonials. Please check your connection.");
         } finally {
             setLoading(false);
         }
@@ -238,8 +237,22 @@ const Testimonials = () => {
             </div>
 
             {loading ? (
-                <div className="flex justify-center p-12">
+                <div className="flex flex-col items-center justify-center p-12 space-y-3">
                     <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-500"></div>
+                    <p className="text-sm text-slate-400">Loading testimonials...</p>
+                </div>
+            ) : error ? (
+                <div className="flex flex-col items-center justify-center p-12 space-y-4 bg-slate-800/30 rounded-xl border border-red-500/20">
+                    <div className="text-red-400 text-center">
+                        <svg className="h-10 w-10 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                        <p className="text-sm font-medium">{error}</p>
+                    </div>
+                    <button
+                        onClick={fetchTestimonials}
+                        className="px-4 py-2 text-sm font-medium text-white bg-cyan-600 rounded-lg hover:bg-cyan-500 transition-colors"
+                    >
+                        Try Again
+                    </button>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
