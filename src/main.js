@@ -10,9 +10,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Detect mobile once for performance branching
+const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  || (window.innerWidth <= 768);
+
 // Initialize Smooth Scroll (Lenis)
+// On mobile: disable smooth touch to avoid fighting native scroll momentum
 const lenis = new Lenis({
-  duration: 1.2,
+  duration: isMobile ? 0.8 : 1.2,
   easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
   direction: 'vertical',
   gestureDirection: 'vertical',
@@ -312,7 +317,8 @@ const preloadImages = () => {
 // Interpolation state (declared early so setCanvasDimensions can reference it)
 let currentFrameIndex = 0;
 let targetFrameIndex = 0;
-const easingFactor = 0.08;
+// Mobile: faster easing = less lag between scroll and frame update = less perceived jank
+const easingFactor = isMobile ? 0.2 : 0.08;
 
 // Set canvas dimensions (High-DPI Support with Performance Cap)
 // Track previous width to avoid unnecessary resets from mobile address bar changes
@@ -320,11 +326,14 @@ let lastCanvasWidth = 0;
 let lastCanvasHeight = 0;
 
 const setCanvasDimensions = (force = false) => {
-  // Get device pixel ratio, capped at 2 to avoid mobile overheating
-  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  // Mobile: cap DPR to 1.0 to halve canvas pixel count (huge perf win)
+  // Desktop: cap at 2 to avoid 4K overhead
+  let dpr = isMobile
+    ? 1
+    : Math.min(window.devicePixelRatio || 1, 2);
 
-  // Performance Optimization: Cap max internal width to 2560px (QHD)
-  const maxWidth = 3000;
+  // Performance Optimization: Cap max internal width
+  const maxWidth = isMobile ? 1200 : 3000;
   if (window.innerWidth * dpr > maxWidth) {
     dpr = maxWidth / window.innerWidth;
   }
@@ -358,29 +367,47 @@ const setCanvasDimensions = (force = false) => {
 };
 
 // Draw logic with "cover" effect
+// Cache mobile shift calculation to avoid recomputing every frame
+let cachedCanvasW = 0;
+let cachedCanvasH = 0;
+let cachedRatio = 0;
+let cachedCenterX = 0;
+let cachedCenterY = 0;
+let cachedImgW = 0;
+let cachedImgH = 0;
+
+const updateDrawCache = (img) => {
+  cachedImgW = img.width;
+  cachedImgH = img.height;
+  cachedCanvasW = canvas.width;
+  cachedCanvasH = canvas.height;
+  cachedRatio = Math.max(cachedCanvasW / cachedImgW, cachedCanvasH / cachedImgH);
+
+  cachedCenterX = (cachedCanvasW - cachedImgW * cachedRatio) / 2;
+  cachedCenterY = (cachedCanvasH - cachedImgH * cachedRatio) / 2;
+
+  // Mobile Adjustment: Shift focus to the right (to show robot)
+  if (isMobile) {
+    const overflowX = (cachedImgW * cachedRatio) - cachedCanvasW;
+    if (overflowX > 0) {
+      cachedCenterX = -(overflowX * 0.75);
+    }
+  }
+};
+
 const drawImage = (index) => {
-  if (index >= 0 && index < totalFrames && images[index].complete) {
+  if (index >= 0 && index < totalFrames && images[index] && images[index].complete) {
     const img = images[index];
-    // Calculate cover dimensions
-    const ratio = Math.max(canvas.width / img.width, canvas.height / img.height);
 
-    let centerShift_x = (canvas.width - img.width * ratio) / 2;
-    const centerShift_y = (canvas.height - img.height * ratio) / 2;
-
-    // Mobile Adjustment: Shift focus to the right (to show robot)
-    if (window.innerWidth < 768) {
-      const overflowX = (img.width * ratio) - canvas.width;
-      if (overflowX > 0) {
-        // Standard center is -overflowX / 2. 
-        // Shift further negative to reveal right side.
-        // 0.5 is center, 1.0 is full right side. 0.75 is a good balance.
-        centerShift_x = -(overflowX * 0.75);
-      }
+    // Only recalculate layout if canvas size or image changed
+    if (canvas.width !== cachedCanvasW || canvas.height !== cachedCanvasH
+      || img.width !== cachedImgW || img.height !== cachedImgH) {
+      updateDrawCache(img);
     }
 
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(img, 0, 0, img.width, img.height,
-      centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+    context.clearRect(0, 0, cachedCanvasW, cachedCanvasH);
+    context.drawImage(img, 0, 0, cachedImgW, cachedImgH,
+      cachedCenterX, cachedCenterY, cachedImgW * cachedRatio, cachedImgH * cachedRatio);
   }
 };
 
@@ -409,10 +436,12 @@ window.addEventListener('resize', () => {
   // Note: setCanvasDimensions is called by the debounced resize handler below
 });
 
+// Use passive listener for scroll — tells browser we won't call preventDefault,
+// allowing it to scroll without waiting for our JS (critical for mobile smoothness)
 window.addEventListener('scroll', () => {
   // 1. Progress Bar Logic (Uses cached maxScroll)
   const scrollTop = window.scrollY;
-  const scrollFraction = scrollTop / maxScroll;
+  const scrollFraction = maxScroll > 0 ? scrollTop / maxScroll : 0;
   if (progressBar) {
     progressBar.style.width = `${scrollFraction * 100}%`;
   }
@@ -422,7 +451,7 @@ window.addEventListener('scroll', () => {
     totalFrames - 1,
     Math.max(0, scrollFraction * totalFrames)
   );
-});
+}, { passive: true });
 
 // 3. Active Section Highlighting (IntersectionObserver - High Performance)
 const navObserver = new IntersectionObserver((entries) => {
@@ -535,15 +564,17 @@ const initAdvancedAnimations = () => {
 // ideally it runs when loader disappears.
 // Let's modify the finishLoading function in preloadImages to call this.
 
-// Render Loop
+// Render Loop — optimized for mobile
 let lastDrawnFrame = -1;
 
 const renderLoop = () => {
   // Linear Interpolation (Lerp)
   const diff = targetFrameIndex - currentFrameIndex;
 
-  // Optimization: If difference is very small, snap to target to stop micro-calculations
-  if (Math.abs(diff) < 0.05) {
+  // Snap threshold: mobile is higher to reduce micro-frame oscillation
+  const snapThreshold = isMobile ? 0.3 : 0.05;
+
+  if (Math.abs(diff) < snapThreshold) {
     currentFrameIndex = targetFrameIndex;
   } else {
     currentFrameIndex += diff * easingFactor;
@@ -552,7 +583,7 @@ const renderLoop = () => {
   // Draw the interpolated frame
   const frameToDraw = Math.floor(currentFrameIndex);
 
-  // Optimization: Only draw if the frame actually changed!
+  // Only draw if the frame actually changed
   if (frameToDraw !== lastDrawnFrame) {
     drawImage(frameToDraw);
     lastDrawnFrame = frameToDraw;
