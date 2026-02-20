@@ -47,10 +47,15 @@ body {
     width: 100%;
     height: 100%;
     z-index: -1;
-    /* GPU compositing hints for smooth mobile rendering */
+    /* GPU compositing hints for all browsers */
     will-change: contents;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
+    /* Safari: force compositing layer */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    /* Prevent image rendering interpolation on low-res canvas */
+    image-rendering: auto;
 }
 
 h1,
