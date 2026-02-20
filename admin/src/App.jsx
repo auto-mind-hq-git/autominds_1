@@ -16,24 +16,16 @@ function App() {
             <Router basename="/admin">
                 <Routes>
                     <Route path="/login" element={<Login />} />
-                    <Route
-                        path="/*"
-                        element={
-                            <ProtectedRoute>
-                                <Layout>
-                                    <Routes>
-                                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                                        <Route path="/dashboard" element={<Dashboard />} />
-                                        <Route path="/services" element={<Services />} />
-                                        <Route path="/portfolio" element={<Projects />} />
-                                        <Route path="/testimonials" element={<Testimonials />} />
-                                        <Route path="/statistics" element={<Settings />} /> {/* Reuse placeholder for now */}
-                                        <Route path="/settings" element={<Settings />} />
-                                    </Routes>
-                                </Layout>
-                            </ProtectedRoute>
-                        }
-                    />
+                    <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                        <Route index element={<Navigate to="/dashboard" replace />} />
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route path="services" element={<Services />} />
+                        <Route path="portfolio" element={<Projects />} />
+                        <Route path="testimonials" element={<Testimonials />} />
+                        <Route path="statistics" element={<Settings />} />
+                        <Route path="settings" element={<Settings />} />
+                    </Route>
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
             </Router>
         </AuthProvider>

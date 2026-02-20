@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Briefcase,
@@ -128,7 +128,7 @@ export const Topbar = ({ onMenuClick }) => {
     )
 }
 
-const Layout = ({ children }) => {
+const Layout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
@@ -139,7 +139,7 @@ const Layout = ({ children }) => {
                 <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar relative">
                     <div className="max-w-7xl mx-auto">
-                        {children}
+                        <Outlet />
                     </div>
                 </main>
             </div>

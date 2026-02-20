@@ -1,0 +1,8 @@
+# SPA routing for admin panel
+/admin/*    /admin/index.html   200
+
+# SPA routing for portfolio
+/portfolio/*    /portfolio/index.html   200
+
+# SPA routing for main site
+/*    /index.html   200
