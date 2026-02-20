@@ -309,6 +309,11 @@ const preloadImages = () => {
   }
 };
 
+// Interpolation state (declared early so setCanvasDimensions can reference it)
+let currentFrameIndex = 0;
+let targetFrameIndex = 0;
+const easingFactor = 0.08;
+
 // Set canvas dimensions (High-DPI Support with Performance Cap)
 // Track previous width to avoid unnecessary resets from mobile address bar changes
 let lastCanvasWidth = 0;
@@ -339,12 +344,16 @@ const setCanvasDimensions = (force = false) => {
     lastCanvasWidth = newWidth;
     lastCanvasHeight = newHeight;
     // Immediately redraw after resize to prevent blank canvas
-    drawImage(Math.floor(currentFrameIndex));
+    if (images.length > 0 && images[Math.floor(currentFrameIndex)]?.complete) {
+      drawImage(Math.floor(currentFrameIndex));
+    }
   } else if (heightChanged) {
     // Height-only change (mobile address bar): update height but redraw immediately
     canvas.height = newHeight;
     lastCanvasHeight = newHeight;
-    drawImage(Math.floor(currentFrameIndex));
+    if (images.length > 0 && images[Math.floor(currentFrameIndex)]?.complete) {
+      drawImage(Math.floor(currentFrameIndex));
+    }
   }
 };
 
@@ -384,10 +393,7 @@ images[0].onload = () => {
   drawImage(0);
 }
 
-// Interpolation state
-let currentFrameIndex = 0;
-let targetFrameIndex = 0;
-const easingFactor = 0.08; // Adjust for smoother/faster feel (0.05 - 0.1)
+// (currentFrameIndex, targetFrameIndex, easingFactor moved above setCanvasDimensions)
 
 // Navigation Highlighting & Progress Bar
 // Navigation Highlighting & Progress Bar

@@ -28,14 +28,12 @@
 
 html {
     scroll-behavior: smooth;
-    background-color: #0a1628;
-    /* Dark fallback on html element; canvas sits between html and body */
 }
 
 body {
     font-family: var(--font-body);
-    background-color: transparent;
-    /* Transparent so the fixed canvas (z-index: -1) shows through */
+    background-color: #0a1628;
+    /* Fallback color */
     color: var(--color-text-main);
     overflow-x: hidden;
     line-height: 1.6;
