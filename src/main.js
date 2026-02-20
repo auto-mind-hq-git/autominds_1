@@ -262,12 +262,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
 
 // 2. Scroll Animation (Canvas Frame Sequence)
 const canvas = document.getElementById('scroll-canvas');
-// Use 'desynchronized' hint for non-blocking GPU rendering (Chrome 75+)
-// Falls back gracefully on unsupported browsers
-const context = canvas.getContext('2d', {
-  alpha: false,           // No transparency needed, perf boost
-  desynchronized: true    // Decouple canvas rendering from DOM (reduces latency)
-});
+const context = canvas.getContext('2d');
 
 // Mobile: load every 2nd frame to halve memory usage (121 vs 241 frames)
 // The visual difference is minimal since frames are interpolated
