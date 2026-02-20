@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -13,7 +13,7 @@ import Settings from './pages/Settings';
 function App() {
     return (
         <AuthProvider>
-            <Router basename="/admin">
+            <Router>
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route element={<ProtectedRoute />}>
