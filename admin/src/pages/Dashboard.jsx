@@ -13,7 +13,10 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Auto-cleanup duplicates once per session
+                // Seed default data if database is empty (one-time)
+                await DataService.checkAndSeedDatabase();
+
+                // Auto-cleanup duplicates once per session (safety net)
                 if (!sessionStorage.getItem('autominds_cleanup_done')) {
                     try {
                         const stats = await DataService.cleanupDuplicates();
