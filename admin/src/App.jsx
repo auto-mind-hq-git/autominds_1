@@ -16,16 +16,18 @@ function App() {
             <Router basename="/admin">
                 <Routes>
                     <Route path="/login" element={<Login />} />
-                    <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                        <Route index element={<Navigate to="/dashboard" replace />} />
-                        <Route path="dashboard" element={<Dashboard />} />
-                        <Route path="services" element={<Services />} />
-                        <Route path="portfolio" element={<Projects />} />
-                        <Route path="testimonials" element={<Testimonials />} />
-                        <Route path="statistics" element={<Settings />} />
-                        <Route path="settings" element={<Settings />} />
+                    <Route element={<ProtectedRoute />}>
+                        <Route element={<Layout />}>
+                            <Route index element={<Navigate to="/dashboard" replace />} />
+                            <Route path="dashboard" element={<Dashboard />} />
+                            <Route path="services" element={<Services />} />
+                            <Route path="portfolio" element={<Projects />} />
+                            <Route path="testimonials" element={<Testimonials />} />
+                            <Route path="statistics" element={<Settings />} />
+                            <Route path="settings" element={<Settings />} />
+                        </Route>
                     </Route>
-                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </Router>
         </AuthProvider>
