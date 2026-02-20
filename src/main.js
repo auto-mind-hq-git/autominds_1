@@ -13,46 +13,38 @@ gsap.registerPlugin(ScrollTrigger);
 // Detect mobile once for performance branching
 const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   || (window.innerWidth <= 768);
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 // Initialize Smooth Scroll (Lenis)
-// On mobile: completely disable Lenis — native mobile scroll is already optimized
-// by the browser and Lenis adds CPU overhead that competes with canvas rendering
-let lenis = null;
-if (!isMobile) {
-  lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    direction: 'vertical',
-    gestureDirection: 'vertical',
-    smooth: true,
-    mouseMultiplier: 1,
-    smoothTouch: false,
-    touchMultiplier: 2,
-  });
+// On mobile: disable smooth touch to avoid fighting native scroll momentum
+const lenis = new Lenis({
+  duration: isMobile ? 0.8 : 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  direction: 'vertical',
+  gestureDirection: 'vertical',
+  smooth: true,
+  mouseMultiplier: 1,
+  smoothTouch: false,
+  touchMultiplier: 2,
+});
 
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
+function raf(time) {
+  lenis.raf(time);
   requestAnimationFrame(raf);
 }
+
+requestAnimationFrame(raf);
 
 // 2. Hashless Smooth Scroll (Intercept Links)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {
     e.preventDefault();
     const targetId = this.getAttribute('href');
-    if (targetId === '#') return;
+    if (targetId === '#') return; // Ignore empty hash
 
     const targetElement = document.querySelector(targetId);
     if (targetElement) {
-      // Use Lenis on desktop, native on mobile
-      if (lenis) {
-        lenis.scrollTo(targetElement);
-      } else {
-        targetElement.scrollIntoView({ behavior: 'smooth' });
-      }
+      // Use Lenis for smooth scroll
+      lenis.scrollTo(targetElement);
 
       // Close mobile menu if open
       const mobileBtn = document.querySelector('.mobile-menu-btn');
@@ -72,11 +64,10 @@ window.addEventListener('load', () => {
     const targetElement = document.querySelector(targetId);
 
     if (targetElement) {
-      if (lenis) {
-        lenis.scrollTo(targetElement, { immediate: false, duration: 1.5 });
-      } else {
-        targetElement.scrollIntoView({ behavior: 'smooth' });
-      }
+      // Scroll to target immediately or smoothly
+      lenis.scrollTo(targetElement, { immediate: false, duration: 1.5 });
+
+      // Clean the URL
       history.replaceState(null, null, window.location.pathname);
     }
   }
@@ -90,28 +81,28 @@ const navLinks = document.querySelector('.nav-links');
 // Smart Scroll Logic
 let lastScrollTop = 0;
 
-const handleNavScroll = (scrollTop) => {
+lenis.on('scroll', ({ scroll }) => {
+  const scrollTop = scroll;
+
+  // 1. Background Shift
   if (scrollTop > 50) {
     navbar.classList.add('scrolled');
   } else {
     navbar.classList.remove('scrolled');
   }
 
+  // 2. Hide/Show on Scroll
+  // Threshold of 100px so it doesn't flicker at top
   if (scrollTop > lastScrollTop && scrollTop > 100) {
+    // Scrolling Down
     navbar.classList.add('nav-hidden');
   } else {
+    // Scrolling Up
     navbar.classList.remove('nav-hidden');
   }
 
-  lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-};
-
-// On desktop use Lenis scroll event, on mobile use native scroll
-if (lenis) {
-  lenis.on('scroll', ({ scroll }) => handleNavScroll(scroll));
-} else {
-  window.addEventListener('scroll', () => handleNavScroll(window.scrollY), { passive: true });
-}
+  lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // Mobile or negative scrolling
+});
 
 // Custom Cursor Logic
 const cursor = document.querySelector('.custom-cursor');
@@ -263,41 +254,41 @@ document.querySelectorAll('.nav-links a').forEach(link => {
 // 2. Scroll Animation (Canvas Frame Sequence)
 const canvas = document.getElementById('scroll-canvas');
 const context = canvas.getContext('2d');
-
-// Mobile: load every 2nd frame to halve memory usage (121 vs 241 frames)
-// The visual difference is minimal since frames are interpolated
-const sourceFrameCount = 241;
-const frameStep = isMobile ? 2 : 1; // Skip every other frame on mobile
-const totalFrames = Math.ceil(sourceFrameCount / frameStep);
+const totalFrames = 241;
 const images = [];
-const bitmaps = []; // Pre-decoded ImageBitmap objects for faster drawing
+// Updated to 4K JPG path
 const frameLocation = '/frames/ezgif-frame-';
 
-// Preload images with optional pre-decoding
+// Preload images
 const preloadImages = () => {
   let loadedCount = 0;
   const loaderFill = document.getElementById('loader-fill');
   const loaderText = document.getElementById('loader-text');
   const loader = document.getElementById('loader');
+
+  // Ensure we don't start animation before at least some images are ready
+  const minFramesToStart = 50;
   let hasStarted = false;
 
   const finishLoading = () => {
     if (hasStarted) return;
     hasStarted = true;
 
+    // Force UI to 100%
     if (loaderFill) loaderFill.style.width = '100%';
     if (loaderText) loaderText.innerText = 'System Ready';
 
     setTimeout(() => {
       if (loader) loader.classList.add('hidden');
+      // Trigger initial draw
       drawImage(0);
       renderLoop();
-      initAdvancedAnimations();
+      initAdvancedAnimations(); // Trigger GSAP animations
     }, 500);
   };
 
-  // Safety fallback: Force start after 8 seconds
-  setTimeout(finishLoading, isMobile ? 5000 : 8000);
+  // Safety fallback: Force start after 8 seconds (max wait)
+  setTimeout(finishLoading, 8000);
 
   const updateProgress = () => {
     loadedCount++;
@@ -306,54 +297,43 @@ const preloadImages = () => {
     if (loaderFill) loaderFill.style.width = `${percent}%`;
     if (loaderText) loaderText.innerText = `Initializing Systems... ${percent}%`;
 
+    // Finish if 95% loaded. This prevents getting stuck at 99% if 1-2 images hang or error out silently.
     if (loadedCount >= totalFrames * 0.95) {
       finishLoading();
     }
   };
 
-  // Pre-decode an image into an ImageBitmap (off main thread)
-  const preDecodeImage = (img, index) => {
-    if (typeof createImageBitmap === 'function') {
-      createImageBitmap(img).then(bitmap => {
-        bitmaps[index] = bitmap;
-      }).catch(() => {
-        // Fallback: just use the Image element directly
-      });
-    }
-  };
-
-  for (let i = 0; i < totalFrames; i++) {
-    const sourceIndex = (i * frameStep) + 1; // Map to original frame number
+  for (let i = 1; i <= totalFrames; i++) {
     const img = new Image();
-    const frameIndex = sourceIndex.toString().padStart(3, '0');
+    const frameIndex = i.toString().padStart(3, '0');
+    // Use .jpg for high-res frames
     img.src = `${frameLocation}${frameIndex}.jpg`;
-    // Hint browser about decoding priority
-    img.decoding = 'async';
     images.push(img);
-
-    img.onload = () => {
-      preDecodeImage(img, i);
-      updateProgress();
-    };
-    img.onerror = updateProgress;
+    img.onload = updateProgress;
+    img.onerror = updateProgress; // Count errors too so we don't hang
   }
 };
 
 // Interpolation state (declared early so setCanvasDimensions can reference it)
 let currentFrameIndex = 0;
 let targetFrameIndex = 0;
-// Mobile: faster easing = less lag between scroll and frame update
-const easingFactor = isMobile ? 0.35 : 0.08;
+// Mobile: faster easing = less lag between scroll and frame update = less perceived jank
+const easingFactor = isMobile ? 0.2 : 0.08;
 
 // Set canvas dimensions (High-DPI Support with Performance Cap)
+// Track previous width to avoid unnecessary resets from mobile address bar changes
 let lastCanvasWidth = 0;
 let lastCanvasHeight = 0;
 
 const setCanvasDimensions = (force = false) => {
-  // Mobile: DPR 1 to minimize canvas pixel count
-  let dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+  // Mobile: cap DPR to 1.0 to halve canvas pixel count (huge perf win)
+  // Desktop: cap at 2 to avoid 4K overhead
+  let dpr = isMobile
+    ? 1
+    : Math.min(window.devicePixelRatio || 1, 2);
 
-  const maxWidth = isMobile ? 1000 : 3000;
+  // Performance Optimization: Cap max internal width
+  const maxWidth = isMobile ? 1200 : 3000;
   if (window.innerWidth * dpr > maxWidth) {
     dpr = maxWidth / window.innerWidth;
   }
@@ -361,6 +341,9 @@ const setCanvasDimensions = (force = false) => {
   const newWidth = Math.floor(window.innerWidth * dpr);
   const newHeight = Math.floor(window.innerHeight * dpr);
 
+  // On mobile, the address bar hiding/showing changes only height.
+  // Only reset canvas if width changed OR this is the initial call (force).
+  // Resetting canvas.width/height clears the canvas, causing visible flicker.
   const widthChanged = newWidth !== lastCanvasWidth;
   const heightChanged = newHeight !== lastCanvasHeight;
 
@@ -369,21 +352,24 @@ const setCanvasDimensions = (force = false) => {
     canvas.height = newHeight;
     lastCanvasWidth = newWidth;
     lastCanvasHeight = newHeight;
-    cachedCanvasW = 0; // Invalidate draw cache
-    if (images.length > 0 && images[Math.floor(currentFrameIndex)]?.complete) {
-      drawImage(Math.floor(currentFrameIndex));
+    // Immediately redraw after resize to prevent blank canvas
+    const idx = Math.floor(currentFrameIndex);
+    if (images.length > 0 && images[idx] && images[idx].complete) {
+      drawImage(idx);
     }
   } else if (heightChanged) {
+    // Height-only change (mobile address bar): update height but redraw immediately
     canvas.height = newHeight;
     lastCanvasHeight = newHeight;
-    cachedCanvasW = 0; // Invalidate draw cache
-    if (images.length > 0 && images[Math.floor(currentFrameIndex)]?.complete) {
-      drawImage(Math.floor(currentFrameIndex));
+    const idx2 = Math.floor(currentFrameIndex);
+    if (images.length > 0 && images[idx2] && images[idx2].complete) {
+      drawImage(idx2);
     }
   }
 };
 
-// Draw logic — cached calculations, uses pre-decoded bitmaps when available
+// Draw logic with "cover" effect
+// Cache mobile shift calculation to avoid recomputing every frame
 let cachedCanvasW = 0;
 let cachedCanvasH = 0;
 let cachedRatio = 0;
@@ -392,9 +378,9 @@ let cachedCenterY = 0;
 let cachedImgW = 0;
 let cachedImgH = 0;
 
-const updateDrawCache = (source) => {
-  cachedImgW = source.width;
-  cachedImgH = source.height;
+const updateDrawCache = (img) => {
+  cachedImgW = img.width;
+  cachedImgH = img.height;
   cachedCanvasW = canvas.width;
   cachedCanvasH = canvas.height;
   cachedRatio = Math.max(cachedCanvasW / cachedImgW, cachedCanvasH / cachedImgH);
@@ -402,6 +388,7 @@ const updateDrawCache = (source) => {
   cachedCenterX = (cachedCanvasW - cachedImgW * cachedRatio) / 2;
   cachedCenterY = (cachedCanvasH - cachedImgH * cachedRatio) / 2;
 
+  // Mobile Adjustment: Shift focus to the right (to show robot)
   if (isMobile) {
     const overflowX = (cachedImgW * cachedRatio) - cachedCanvasW;
     if (overflowX > 0) {
@@ -411,21 +398,19 @@ const updateDrawCache = (source) => {
 };
 
 const drawImage = (index) => {
-  if (index < 0 || index >= totalFrames) return;
+  if (index >= 0 && index < totalFrames && images[index] && images[index].complete) {
+    const img = images[index];
 
-  // Prefer pre-decoded ImageBitmap (faster draw, no decode jank)
-  const source = bitmaps[index] || (images[index]?.complete ? images[index] : null);
-  if (!source) return;
+    // Only recalculate layout if canvas size or image changed
+    if (canvas.width !== cachedCanvasW || canvas.height !== cachedCanvasH
+      || img.width !== cachedImgW || img.height !== cachedImgH) {
+      updateDrawCache(img);
+    }
 
-  // Only recalculate layout if canvas size or image changed
-  if (canvas.width !== cachedCanvasW || canvas.height !== cachedCanvasH
-    || source.width !== cachedImgW || source.height !== cachedImgH) {
-    updateDrawCache(source);
+    context.clearRect(0, 0, cachedCanvasW, cachedCanvasH);
+    context.drawImage(img, 0, 0, cachedImgW, cachedImgH,
+      cachedCenterX, cachedCenterY, cachedImgW * cachedRatio, cachedImgH * cachedRatio);
   }
-
-  context.clearRect(0, 0, cachedCanvasW, cachedCanvasH);
-  context.drawImage(source, 0, 0, cachedImgW, cachedImgH,
-    cachedCenterX, cachedCenterY, cachedImgW * cachedRatio, cachedImgH * cachedRatio);
 };
 
 // Initial setup
@@ -453,29 +438,21 @@ window.addEventListener('resize', () => {
   // Note: setCanvasDimensions is called by the debounced resize handler below
 });
 
-// Use rAF-throttled scroll handler — only process scroll once per frame
-// This prevents the scroll handler from firing hundreds of times between frames
-let scrollTicking = false;
-
+// Use passive listener for scroll — tells browser we won't call preventDefault,
+// allowing it to scroll without waiting for our JS (critical for mobile smoothness)
 window.addEventListener('scroll', () => {
-  if (!scrollTicking) {
-    scrollTicking = true;
-    requestAnimationFrame(() => {
-      const scrollTop = window.scrollY;
-      const scrollFraction = maxScroll > 0 ? scrollTop / maxScroll : 0;
-
-      if (progressBar) {
-        progressBar.style.width = `${scrollFraction * 100}%`;
-      }
-
-      targetFrameIndex = Math.min(
-        totalFrames - 1,
-        Math.max(0, scrollFraction * totalFrames)
-      );
-
-      scrollTicking = false;
-    });
+  // 1. Progress Bar Logic (Uses cached maxScroll)
+  const scrollTop = window.scrollY;
+  const scrollFraction = maxScroll > 0 ? scrollTop / maxScroll : 0;
+  if (progressBar) {
+    progressBar.style.width = `${scrollFraction * 100}%`;
   }
+
+  // 2. Frame Animation Logic
+  targetFrameIndex = Math.min(
+    totalFrames - 1,
+    Math.max(0, scrollFraction * totalFrames)
+  );
 }, { passive: true });
 
 // 3. Active Section Highlighting (IntersectionObserver - High Performance)
@@ -589,33 +566,29 @@ const initAdvancedAnimations = () => {
 // ideally it runs when loader disappears.
 // Let's modify the finishLoading function in preloadImages to call this.
 
-// Render Loop — optimized per device
+// Render Loop — optimized for mobile
 let lastDrawnFrame = -1;
 
 const renderLoop = () => {
-  if (isMobile) {
-    // MOBILE: Skip interpolation entirely — snap directly to target frame
-    // This eliminates the constant lerp animation loop overhead
-    // and makes frames feel instantly responsive to scroll position
-    const frameToDraw = Math.floor(targetFrameIndex);
-    if (frameToDraw !== lastDrawnFrame) {
-      drawImage(frameToDraw);
-      lastDrawnFrame = frameToDraw;
-    }
-  } else {
-    // DESKTOP: Smooth interpolation for buttery animation
-    const diff = targetFrameIndex - currentFrameIndex;
-    if (Math.abs(diff) < 0.05) {
-      currentFrameIndex = targetFrameIndex;
-    } else {
-      currentFrameIndex += diff * easingFactor;
-    }
+  // Linear Interpolation (Lerp)
+  const diff = targetFrameIndex - currentFrameIndex;
 
-    const frameToDraw = Math.floor(currentFrameIndex);
-    if (frameToDraw !== lastDrawnFrame) {
-      drawImage(frameToDraw);
-      lastDrawnFrame = frameToDraw;
-    }
+  // Snap threshold: mobile is higher to reduce micro-frame oscillation
+  const snapThreshold = isMobile ? 0.3 : 0.05;
+
+  if (Math.abs(diff) < snapThreshold) {
+    currentFrameIndex = targetFrameIndex;
+  } else {
+    currentFrameIndex += diff * easingFactor;
+  }
+
+  // Draw the interpolated frame
+  const frameToDraw = Math.floor(currentFrameIndex);
+
+  // Only draw if the frame actually changed
+  if (frameToDraw !== lastDrawnFrame) {
+    drawImage(frameToDraw);
+    lastDrawnFrame = frameToDraw;
   }
 
   requestAnimationFrame(renderLoop);
