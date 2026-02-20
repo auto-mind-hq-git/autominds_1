@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Briefcase,
@@ -128,9 +128,8 @@ export const Topbar = ({ onMenuClick }) => {
     )
 }
 
-const Layout = () => {
+const Layout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const location = useLocation();
 
     return (
         <div className="flex h-screen bg-[#0a1628] overflow-hidden">
@@ -139,8 +138,8 @@ const Layout = () => {
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar relative">
-                    <div className="max-w-7xl mx-auto" key={location.pathname}>
-                        <Outlet />
+                    <div className="max-w-7xl mx-auto">
+                        {children}
                     </div>
                 </main>
             </div>
