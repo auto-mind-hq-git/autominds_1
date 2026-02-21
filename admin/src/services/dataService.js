@@ -5,7 +5,8 @@ import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase
 const COLLECTIONS = {
     SERVICES: 'services',
     PROJECTS: 'projects',
-    TESTIMONIALS: 'testimonials'
+    TESTIMONIALS: 'testimonials',
+    WEBSITES: 'websites'
 };
 
 // Cache Object
@@ -13,10 +14,12 @@ const cache = {
     services: null,
     projects: null,
     testimonials: null,
+    websites: null,
     lastFetch: {
         services: 0,
         projects: 0,
-        testimonials: 0
+        testimonials: 0,
+        websites: 0
     }
 };
 
@@ -411,6 +414,42 @@ export const DataService = {
             return true;
         } catch (error) {
             console.error("Error deleting testimonial:", error);
+            throw error;
+        }
+    },
+
+    // Websites
+    getWebsites: async () => {
+        return await fetchCollection(COLLECTIONS.WEBSITES, 'websites');
+    },
+
+    saveWebsite: async (website) => {
+        try {
+            let result;
+            if (website.id) {
+                const docRef = doc(db, COLLECTIONS.WEBSITES, website.id);
+                const { id, ...data } = website;
+                await withTimeout(updateDoc(docRef, data));
+                result = website;
+            } else {
+                const docRef = await withTimeout(addDoc(collection(db, COLLECTIONS.WEBSITES), website));
+                result = { id: docRef.id, ...website };
+            }
+            invalidateCache('websites');
+            return result;
+        } catch (error) {
+            console.error("Error saving website:", error);
+            throw error;
+        }
+    },
+
+    deleteWebsite: async (id) => {
+        try {
+            await withTimeout(deleteDoc(doc(db, COLLECTIONS.WEBSITES, id)));
+            invalidateCache('websites');
+            return true;
+        } catch (error) {
+            console.error("Error deleting website:", error);
             throw error;
         }
     }

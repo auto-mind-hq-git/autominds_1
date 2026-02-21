@@ -11,7 +11,8 @@ import { collection, getDocs } from 'firebase/firestore';
 const COLLECTIONS = {
     SERVICES: 'services',
     PROJECTS: 'projects',
-    TESTIMONIALS: 'testimonials'
+    TESTIMONIALS: 'testimonials',
+    WEBSITES: 'websites'
 };
 
 // Helper: Fetch Data from Firestore
@@ -133,17 +134,55 @@ const getIconEmoji = (iconName) => {
     return getIcon(iconName);
 };
 
+// 4. Render Websites (Portfolio page)
+const renderWebsites = async () => {
+    const websites = await fetchCollection(COLLECTIONS.WEBSITES);
+    if (!websites || websites.length === 0) return;
+
+    const container = document.querySelector('.websites-portfolio-grid');
+    if (!container) return;
+
+    container.innerHTML = websites.map(w => {
+        const tags = Array.isArray(w.tags) ? w.tags : [];
+        const tagsHtml = tags.map(t => `<span class="project-category" style="position:relative;top:auto;left:auto;display:inline-block;margin-right:6px;">${t.toUpperCase()}</span>`).join('');
+        const metricsHtml = (w.metrics || []).map(m => `
+            <div class="metric-item">
+                <span class="metric-value">${m.value}</span>
+                <span class="metric-label">${m.label}</span>
+            </div>
+        `).join('');
+
+        return `
+        <div class="portfolio-card fade-in-section is-visible">
+            <div class="project-thumbnail">
+                <div class="project-overlay-gradient"></div>
+                <div class="project-category">WEBSITE</div>
+                <div class="thumb-icon-container">
+                    <i class="fas ${w.icon || 'fa-globe'}"></i>
+                </div>
+            </div>
+            <div class="project-content">
+                <h3 class="project-title">${(w.name || '').toUpperCase()}</h3>
+                <p class="project-description">${w.description || ''}</p>
+                ${metricsHtml ? `<div class="project-metrics">${metricsHtml}</div>` : ''}
+                <a href="${w.url}" target="_blank" rel="noopener noreferrer" class="view-case-study">
+                    Visit Website <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>`;
+    }).join('');
+};
+
 // Main Init Function
 export const initDynamicContent = async () => {
-    // Async loading from Firestore
     console.log('Connecting to Global Database...');
     await Promise.all([
         renderServices(),
         renderProjects(),
-        renderTestimonials()
+        renderTestimonials(),
+        renderWebsites()
     ]);
     console.log('Global Content Loaded.');
 
-    // Dispatch event to re-initialize observers or carousels if needed
     window.dispatchEvent(new Event('contentLoaded'));
 };
