@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Layout from './components/Layout';
@@ -9,43 +9,95 @@ import Projects from './pages/Projects';
 import Testimonials from './pages/Testimonials';
 import Settings from './pages/Settings';
 
-const AppRoutes = () => {
+// Auth guard - redirects to login if not authenticated
+const AuthGuard = () => {
     const { currentUser } = useAuth();
-    const location = useLocation();
-
     if (!currentUser) {
-        return (
-            <Routes location={location} key={location.pathname}>
-                <Route path="/login" element={<Login />} />
-                <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-        );
+        return <Navigate to="/login" replace />;
     }
+    return <Outlet />;
+};
 
+// Layout wrapper renders children via Outlet
+const LayoutWrapper = () => {
+    const location = useLocation();
     return (
         <Layout>
-            <Routes location={location} key={location.pathname}>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/portfolio" element={<Projects />} />
-                <Route path="/testimonials" element={<Testimonials />} />
-                <Route path="/statistics" element={<Settings />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
+            <Outlet key={location.pathname} />
         </Layout>
     );
 };
 
-function App() {
+// Root wrapper provides auth context to all routes
+const RootLayout = () => {
     return (
         <AuthProvider>
-            <HashRouter>
-                <AppRoutes />
-            </HashRouter>
+            <Outlet />
         </AuthProvider>
     );
+};
+
+const router = createBrowserRouter(
+    [
+        {
+            element: <RootLayout />,
+            children: [
+                {
+                    path: '/login',
+                    element: <Login />,
+                },
+                {
+                    element: <AuthGuard />,
+                    children: [
+                        {
+                            element: <LayoutWrapper />,
+                            children: [
+                                {
+                                    index: true,
+                                    element: <Navigate to="/dashboard" replace />,
+                                },
+                                {
+                                    path: 'dashboard',
+                                    element: <Dashboard />,
+                                },
+                                {
+                                    path: 'services',
+                                    element: <Services />,
+                                },
+                                {
+                                    path: 'portfolio',
+                                    element: <Projects />,
+                                },
+                                {
+                                    path: 'testimonials',
+                                    element: <Testimonials />,
+                                },
+                                {
+                                    path: 'statistics',
+                                    element: <Settings />,
+                                },
+                                {
+                                    path: 'settings',
+                                    element: <Settings />,
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    path: '*',
+                    element: <Navigate to="/login" replace />,
+                },
+            ],
+        },
+    ],
+    {
+        basename: '/admin',
+    }
+);
+
+function App() {
+    return <RouterProvider router={router} />;
 }
 
 export default App;
