@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Briefcase,
@@ -13,24 +12,24 @@ import {
     Bell
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigation } from '../App';
 
 const Sidebar = ({ isOpen, onClose }) => {
-    const location = useLocation();
     const { logout } = useAuth();
-    const navigate = useNavigate();
+    const { currentPage, navigate } = useNavigation();
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        window.location.href = '/admin/';
     };
 
     const menuItems = [
-        { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/services', label: 'Services', icon: Layers },
-        { path: '/portfolio', label: 'Portfolio', icon: Briefcase },
-        { path: '/testimonials', label: 'Testimonials', icon: MessageSquare },
-        { path: '/statistics', label: 'Statistics', icon: BarChart2 },
-        { path: '/settings', label: 'Settings', icon: Settings },
+        { path: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { path: 'services', label: 'Services', icon: Layers },
+        { path: 'portfolio', label: 'Portfolio', icon: Briefcase },
+        { path: 'testimonials', label: 'Testimonials', icon: MessageSquare },
+        { path: 'statistics', label: 'Statistics', icon: BarChart2 },
+        { path: 'settings', label: 'Settings', icon: Settings },
     ];
 
     return (
@@ -59,21 +58,22 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <ul className="space-y-1 px-3">
                         {menuItems.map((item) => {
                             const Icon = item.icon;
+                            const isActive = currentPage === item.path;
                             return (
                                 <li key={item.path}>
-                                    <NavLink
-                                        to={item.path}
-                                        onClick={() => onClose && window.innerWidth < 768 && onClose()}
-                                        className={({ isActive }) =>
-                                            `flex items-center px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${isActive
-                                                ? 'bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-400'
-                                                : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                                            }`
-                                        }
+                                    <button
+                                        onClick={() => {
+                                            navigate(item.path);
+                                            if (onClose && window.innerWidth < 768) onClose();
+                                        }}
+                                        className={`flex items-center w-full px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${isActive
+                                            ? 'bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-400'
+                                            : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                                            }`}
                                     >
                                         <Icon className="h-5 w-5 mr-3" />
                                         {item.label}
-                                    </NavLink>
+                                    </button>
                                 </li>
                             );
                         })}

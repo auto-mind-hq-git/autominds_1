@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User, Hexagon } from 'lucide-react';
 
 const Login = () => {
@@ -10,7 +9,6 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -18,7 +16,8 @@ const Login = () => {
             setError('');
             setLoading(true);
             await login(username, password);
-            navigate('/dashboard');
+            // App.jsx will automatically show the admin panel when auth state changes
+            window.history.replaceState({}, '', '/admin/dashboard');
         } catch (err) {
             setError('Failed to sign in: ' + err.message);
         }
