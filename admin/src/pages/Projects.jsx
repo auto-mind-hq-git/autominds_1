@@ -461,8 +461,13 @@ const Projects = () => {
     };
 
     useEffect(() => {
-        fetchProjects();
-        fetchWebsites();
+        const initData = async () => {
+            // Ensure websites are seeded before fetching
+            await DataService.checkAndSeedDatabase();
+            fetchProjects();
+            fetchWebsites();
+        };
+        initData();
     }, []);
 
     // Project handlers

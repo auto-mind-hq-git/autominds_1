@@ -161,6 +161,19 @@ const defaultTestimonials = [
     }
 ];
 
+const defaultWebsites = [
+    {
+        name: 'Veltrix Studio',
+        url: 'https://veltrixstudioai.in',
+        description: 'Premium AI Production Studio — AI-generated imagery for forward-thinking brands, products, and businesses.',
+        tags: ['AI Studio', 'Branding'],
+        icon: 'fa-palette',
+        metrics: [
+            { label: 'STUDIO', value: 'AI' },
+            { label: 'CUSTOM DESIGN', value: '100%' }
+        ]
+    }
+];
 
 // Helper: Fetch all documents from a collection
 const fetchCollection = async (collectionName, cacheKey) => {
@@ -221,6 +234,11 @@ export const DataService = {
                 batchPromises.push(addDoc(collection(db, COLLECTIONS.TESTIMONIALS), testimonial));
             }
 
+            // Add Websites
+            for (const website of defaultWebsites) {
+                batchPromises.push(addDoc(collection(db, COLLECTIONS.WEBSITES), website));
+            }
+
             await withTimeout(Promise.all(batchPromises), 30000);
             console.log("DB Seed Completed.");
 
@@ -228,6 +246,7 @@ export const DataService = {
             invalidateCache('services');
             invalidateCache('projects');
             invalidateCache('testimonials');
+            invalidateCache('websites');
 
             return true;
         } catch (error) {
@@ -240,25 +259,36 @@ export const DataService = {
     checkAndSeedDatabase: async (forceCheck = false) => {
         try {
             // Check local storage AND database to be safe
-            if (!forceCheck && localStorage.getItem('autominds_db_seeded')) {
+            if (!forceCheck && localStorage.getItem('autominds_db_seeded') === 'all') {
                 return false;
             }
 
             const servicesSnapshot = await withTimeout(getDocs(collection(db, COLLECTIONS.SERVICES)));
+            let seededSomething = false;
 
             if (servicesSnapshot.empty) {
                 console.log("Database appears empty. Auto-seeding default data...");
                 await DataService.seedDatabase();
-                localStorage.setItem('autominds_db_seeded', 'true');
-                return true; // Seeded
+                seededSomething = true;
+            } else {
+                // If services exist, just check if websites exist (since we added it later)
+                const websitesSnapshot = await withTimeout(getDocs(collection(db, COLLECTIONS.WEBSITES)));
+                if (websitesSnapshot.empty) {
+                    console.log("Websites collection empty. Seeding default websites...");
+                    const batchPromises = [];
+                    for (const website of defaultWebsites) {
+                        batchPromises.push(addDoc(collection(db, COLLECTIONS.WEBSITES), website));
+                    }
+                    await withTimeout(Promise.all(batchPromises), 15000);
+                    invalidateCache('websites');
+                    seededSomething = true;
+                }
             }
 
-            // If not empty, ensure flag is set
-            if (!localStorage.getItem('autominds_db_seeded')) {
-                localStorage.setItem('autominds_db_seeded', 'true');
-            }
+            // Ensure flag is set so we don't keep firing this check
+            localStorage.setItem('autominds_db_seeded', 'all');
 
-            return false; // Already has data
+            return seededSomething;
         } catch (error) {
             console.error("Error checking database:", error);
             throw error;
