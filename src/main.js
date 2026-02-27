@@ -334,16 +334,31 @@ const setCanvasDimensions = (force = false) => {
 
   // Performance Optimization: Cap max internal width
   const maxWidth = isMobile ? 1200 : 3000;
-  if (window.innerWidth * dpr > maxWidth) {
-    dpr = maxWidth / window.innerWidth;
+
+  // Mobile specific hard-lock for physical dimensions to prevent address bar zoom
+  let targetWidth = window.innerWidth;
+  let targetHeight = window.innerHeight;
+
+  if (isMobile) {
+    // Use screen sizes to get the absolute max viewport without address bars
+    // This locks the CSS rendering and internal canvas size permanently.
+    targetWidth = window.screen.width || window.innerWidth;
+    targetHeight = window.screen.height || window.innerHeight;
+
+    // Lock the CSS styling to prevent CSS object-fit: cover from zooming it
+    canvas.style.width = targetWidth + 'px';
+    canvas.style.height = targetHeight + 'px';
   }
 
-  const newWidth = Math.floor(window.innerWidth * dpr);
-  const newHeight = Math.floor(window.innerHeight * dpr);
+  if (targetWidth * dpr > maxWidth) {
+    dpr = maxWidth / targetWidth;
+  }
 
-  // On mobile, the address bar hiding/showing changes only height.
-  // Only reset canvas if width changed OR this is the initial call (force).
-  // Resetting canvas.width/height clears the canvas, causing visible flicker.
+  const newWidth = Math.floor(targetWidth * dpr);
+  const newHeight = Math.floor(targetHeight * dpr);
+
+  // On mobile, since we lock the dimensions, width and height won't change
+  // effectively ignoring all address bar scroll events.
   const widthChanged = newWidth !== lastCanvasWidth;
   const heightChanged = newHeight !== lastCanvasHeight;
 
