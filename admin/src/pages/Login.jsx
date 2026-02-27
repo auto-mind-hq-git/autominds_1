@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Lock, User, Hexagon } from 'lucide-react';
 
 const Login = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -15,11 +15,18 @@ const Login = () => {
         try {
             setError('');
             setLoading(true);
-            await login(username, password);
+            await login(email, password);
             // App.jsx will automatically show the admin panel when auth state changes
             window.history.replaceState({}, '', '/admin/dashboard');
         } catch (err) {
-            setError('Failed to sign in: ' + err.message);
+            console.error("Login failed:", err);
+            if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+                setError('Invalid email or password.');
+            } else if (err.code === 'auth/too-many-requests') {
+                setError('Too many failed attempts. Please try again later.');
+            } else {
+                setError('Failed to sign in. Please try again.');
+            }
         }
         setLoading(false);
     };
@@ -54,22 +61,22 @@ const Login = () => {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-4">
                         <div className="relative group">
-                            <label htmlFor="username" className="sr-only">
-                                Username
+                            <label htmlFor="email" className="sr-only">
+                                Email Address
                             </label>
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <User className="h-5 w-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
                             </div>
                             <input
-                                id="username"
-                                name="username"
-                                type="text"
-                                autoComplete="username"
+                                id="email"
+                                name="email"
+                                type="email"
+                                autoComplete="email"
                                 required
                                 className="block w-full pl-10 px-3 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                                placeholder="Username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="Email Address"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
                         <div className="relative group">
