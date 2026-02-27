@@ -357,8 +357,8 @@ const setCanvasDimensions = (force = false) => {
     if (images.length > 0 && images[idx] && images[idx].complete) {
       drawImage(idx);
     }
-  } else if (heightChanged) {
-    // Height-only change (mobile address bar): update height but redraw immediately
+  } else if (heightChanged && !isMobile) {
+    // Height-only change: update height but redraw immediately (disabled on mobile to avoid address bar zoom)
     canvas.height = newHeight;
     lastCanvasHeight = newHeight;
     const idx2 = Math.floor(currentFrameIndex);
